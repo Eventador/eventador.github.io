@@ -112,6 +112,8 @@ More information on continuous views is available in the [PipelineDB documentati
 
 ## Monitoring the pipeline
 
+You can monitor your pipeline via the Eventador Console. From the [pipelines](http://console.eventador.io/pipelines) click on the pipeline to monitor. The statistics (default) tab shows some metrics about the pipeline.
+
 ## Versions
 - Kafka v0.10
 - Confluent kafka-REST proxy v3.0.0
