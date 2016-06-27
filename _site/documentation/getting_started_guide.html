@@ -60,7 +60,7 @@
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Getting Started Guide</h1>
-    <p class="post-meta"><time datetime="2016-06-27T16:21:36-05:00" itemprop="datePublished">Jun 27, 2016</time></p>
+    <p class="post-meta"><time datetime="2016-06-27T17:35:52-05:00" itemprop="datePublished">Jun 27, 2016</time></p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
@@ -70,9 +70,9 @@
 
 <p>Eventador provides a producer and consumer interfaces. It also provides an Aggregation Interface in the form of PipelineDB/PostgreSQL. Other Interfaces will be added in the future.</p>
 
-<p>Users produce data to Eventador using a REST interface, and consume data via the same REST interface. The REST interface also provides control over Kafka topics and schema. Users can create multiple pipelines to form more complex event processing systems.</p>
+<p>You produce data to Eventador using a REST interface, and consume data via the same REST interface. The REST interface also provides control over Kafka topics and schema. You can create multiple pipelines to form more complex event processing systems.</p>
 
-<p>Users may also consume data via the Aggregation Interface. The Aggregation Interface is based on PipelineDB/PostgreSQL and allows users to build ‘continuous views’ to aggregate, query, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. Users can build complex programs and algorithms or simply point a reporting tool at the Aggregation Interface.</p>
+<p>You may also consume data via the Aggregation Interface. The Aggregation Interface is based on PipelineDB/PostgreSQL and allows you to build ‘continuous views’ to aggregate, query, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the Aggregation Interface.</p>
 
 <p>Getting started with Eventador takes just a few simple steps.</p>
 
@@ -106,10 +106,6 @@
 </ul>
 
 <h2 id="publishing-data-to-the-eventador-pipeline">Publishing Data to the Eventador Pipeline</h2>
-
-<h1 id="creating-a-schema">Creating a schema</h1>
-
-<p>A schema must be defined once for each pipeline. On creation, the schema is registered with the Eventador Schema Registry service. Data is then validated against this schema as it’s produced into the Eventador pipeline. To create a schema:</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>curl -X POST -H "Content-Type: application/vnd.kafka.avro.v1+json" \
       --data '{"value_schema": "{\"type\": \"record\", \"name\": \"User\", \"fields\": [{\"name\": \"name\", \"type\": \"string\"}]}", "records": [{"value": {"name": "testUser"}}]}' \
@@ -146,9 +142,9 @@
 
 <h1 id="consuming-from-the-eventador-aggregation-interface">Consuming from the Eventador Aggregation Interface</h1>
 
-<p>The Aggregation Interface is based on PipelineDB/PostgreSQL. Users can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB syntax.</p>
+<p>The Aggregation Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB syntax.</p>
 
-<p>A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created and has a sample continuous view created on it. Users can create continuous views as needed. The continuous view is named <code class="highlighter-rouge">ev_sample_view</code> and is available in the users database. The database enforces SSL and causes the client to use SSL by default.</p>
+<p>A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created and has a sample continuous view created on it. You can create continuous views as needed. The continuous view is named <code class="highlighter-rouge">ev_sample_view</code> and is available in the users database. The database enforces SSL and causes the client to use SSL by default.</p>
 
 <p>To login to the database and query the sample view and create more continuous views:</p>
 
@@ -168,17 +164,28 @@
 </code></pre>
 </div>
 
-<p>Continuous views are created on a stream. Every pipeline has a default stream named <code class="highlighter-rouge">&lt;pipeline name&gt;_stream</code> created automatically.
-Users can create a new continuous view:</p>
+<p>Continuous views are created on a stream. Every pipeline has a default stream named <code class="highlighter-rouge">&lt;pipeline name&gt;_stream</code> created automatically, with a payload field with the data type JSON.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>CREATE CONTINUOUS VIEW AS
-SELECT
+<p>You can create a new continuous view:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>CREATE CONTINUOUS VIEW sensor_temps WITH (max_age = '5 minutes') AS
+   SELECT payload-&gt;&gt;sensor::integer, AVG(payload-&gt;&gt;temp::numeric)
+   FROM sensor_stream
+GROUP BY payload-&gt;&gt;sensor;
 </code></pre>
 </div>
 
 <p>More information on continuous views is available in the <a href="http://docs.pipelinedb.com/continuous-views.html">PipelineDB documentation</a></p>
 
 <h2 id="monitoring-the-pipeline">Monitoring the pipeline</h2>
+
+<h2 id="versions">Versions</h2>
+<ul>
+  <li>Kafka v0.10</li>
+  <li>Confluent kafka-REST proxy v3.0.0</li>
+  <li>Confluent Schema Registry v3.0.0</li>
+  <li>PipelineDB 0.9.3/PostgreSQL 9.5</li>
+</ul>
 
   </div>
 
