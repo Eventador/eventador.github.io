@@ -57,7 +57,7 @@ curl -s -X POST -H "Content-Type: application/vnd.kafka.avro.v1+json" \
 --data '{"value_schema": "{\"type\": \"record\",\"name\": \"brewery\",
 \"fields\":[{\"name\": \"sensor\", \"type\":\"string\"},{\"name\": \"temp\", \"type\": \"int\"}]}",
 "records": [{"value": {"sensor": "MashTun1", "temp":28}},{"value": {"sensor": "MashTun2", "temp":27}}]}' \
-https://api.3b4ff5ad.vip.eventador.io/topics/brewery
+https://api.3b4ff5ad.vip.eventador.io/topics/<username>_brewery
 ```
 
 More information on the REST interface can be [found here](http://docs.confluent.io/3.0.0/kafka-rest/docs/api.html).
@@ -90,7 +90,7 @@ Next consume the data using the URI that is returned when we create a consumer.
 
 ```bash
 curl -s -X GET -H "Accept: application/vnd.kafka.avro.v1+json" \
-https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/topics/brewery
+https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/topics/<username>_brewery
 [
   {
      "key": null,
@@ -136,9 +136,9 @@ You can create a new continuous view:
 ```sql
 -- average temperature of sensors over the last 5 minutes by sensor name
 CREATE CONTINUOUS VIEW brewery_sensor_temps WITH (max_age = '5 minutes') AS
-   SELECT payload->>sensor::integer, AVG(payload->>temp::numeric)
+   SELECT payload->>'sensor', AVG((payload->>'temp'::text)::numeric)
    FROM brewery_stream
-GROUP BY payload->>sensor;
+GROUP BY payload->>'sensor';
 ```
 
 More information on continuous views is available in the [PipelineDB documentation](http://docs.pipelinedb.com/continuous-views.html)

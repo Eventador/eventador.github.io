@@ -16,7 +16,7 @@ twitter_username: eventadorlabs
 github_username:  eventador
 
 # Build settings
-markdown: redcarpet
+markdown: Kramdown
 highlighter: rouge
 
 collections:

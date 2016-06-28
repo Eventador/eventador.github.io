@@ -60,15 +60,15 @@
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Getting Started Guide</h1>
-    <p class="post-meta"><time datetime="2016-06-28T17:18:06-05:00" itemprop="datePublished">Jun 28, 2016</time></p>
+    <p class="post-meta"><time datetime="2016-06-28T18:23:41-05:00" itemprop="datePublished">Jun 28, 2016</time></p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <h2>Beta</h2>
+    <h2 id="beta">Beta</h2>
 
-<p>Eventador.io is currently in Beta. Please submit feedback to <a href="mailto:hello@eventador.io">hello@eventador.io</a></p>
+<p>Eventador.io is currently in Beta. Please submit feedback to <a href="&#109;&#097;&#105;&#108;&#116;&#111;:&#104;&#101;&#108;&#108;&#111;&#064;&#101;&#118;&#101;&#110;&#116;&#097;&#100;&#111;&#114;&#046;&#105;&#111;">&#104;&#101;&#108;&#108;&#111;&#064;&#101;&#118;&#101;&#110;&#116;&#097;&#100;&#111;&#114;&#046;&#105;&#111;</a></p>
 
-<h2>Getting Started</h2>
+<h2 id="getting-started">Getting Started</h2>
 
 <p>Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.</p>
 
@@ -76,68 +76,70 @@
 
 <p>You produce data to Eventador using a REST interface, and consume data via the same REST interface. The REST interface also provides control over Kafka topics and schema. You can create multiple pipelines to form more complex event processing systems.</p>
 
-<p>You may also consume data via the Aggregation Interface. The Aggregation Interface is based on PipelineDB/PostgreSQL and allows you to build &#39;continuous views&#39; to aggregate, query, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the Aggregation Interface.</p>
+<p>You may also consume data via the Aggregation Interface. The Aggregation Interface is based on PipelineDB/PostgreSQL and allows you to build ‘continuous views’ to aggregate, query, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the Aggregation Interface.</p>
 
 <p>Getting started with Eventador takes just a few simple steps.</p>
 
-<h2>Creating an account.</h2>
+<h2 id="creating-an-account">Creating an account.</h2>
 
 <p>To get started you must have an account. <a href="http://console.eventador.io/register">Register here</a>.</p>
 
-<h2>Building Pipelines</h2>
+<h2 id="building-pipelines">Building Pipelines</h2>
 
 <p>Pipelines are created on a deployment. So a deployment must first be created for the pipeline. A deployment is a group of AWS compute resources. Multiple pipelines may exist on a single deployment. Deployments are scaled independently of each other. When a pipeline is created, a Kafka topic is created for that pipeline along with all the required plumbing and components.</p>
 
 <p>The <a href="https://console.eventador.io">Eventador Console</a> allows for creation of a deployments and pipelines.</p>
 
-<h1>Creating a deployment:</h1>
-
+<h1 id="creating-a-deployment">Creating a deployment:</h1>
 <ul>
-<li>Click the <a href="http://console.eventador.io/deployments">Deployment</a> tab.</li>
-<li>Select the &#39;Create Deployment&#39; button.</li>
-<li>Name the deployment, and select the compute resource style appropriate for the workload being run.</li>
-<li>Click create. A deployment may take a bit of time to provision. A deployment can not be used until it&#39;s status is &#39;Active&#39; in the <a href="http://console.eventador.io/deployments">Deployments</a> tab.</li>
-<li>An ACL must be created to allow the producers to connect. On the [Deployments] tab, select the deployment-&gt;ACLS-&gt;add ACL. Add in a CIDR notation for the IP to whitelist.</li>
+  <li>Click the <a href="http://console.eventador.io/deployments">Deployment</a> tab.</li>
+  <li>Select the ‘Create Deployment’ button.</li>
+  <li>Name the deployment, and select the compute resource style appropriate for the workload being run.</li>
+  <li>Click create. A deployment may take a bit of time to provision. A deployment can not be used until it’s status is ‘Active’ in the <a href="http://console.eventador.io/deployments">Deployments</a> tab.</li>
+  <li>An ACL must be created to allow the producers to connect. On the [Deployments] tab, select the deployment-&gt;ACLS-&gt;add ACL. Add in a CIDR notation for the IP to whitelist.</li>
 </ul>
 
 <p>A pipeline can now be created on the deployment.</p>
 
-<h1>Creating a pipeline:</h1>
-
+<h1 id="creating-a-pipeline">Creating a pipeline:</h1>
 <ul>
-<li>Click the <a href="http://console.eventador.io/pipelines">Pipelines</a> tab.</li>
-<li>Select the &#39;Create Pipeline&#39; button.</li>
-<li>Name the pipeline, give it a description, select the Deployment that was just created, and give a user/password for the data store.</li>
-<li>Click create. A pipeline is now created and can be seen under the <a href="http://console.eventador.io/pipelines">Pipelines</a> tab.</li>
+  <li>Click the <a href="http://console.eventador.io/pipelines">Pipelines</a> tab.</li>
+  <li>Select the ‘Create Pipeline’ button.</li>
+  <li>Name the pipeline, give it a description, select the Deployment that was just created, and give a user/password for the data store.</li>
+  <li>Click create. A pipeline is now created and can be seen under the <a href="http://console.eventador.io/pipelines">Pipelines</a> tab.</li>
 </ul>
 
-<h2>Publishing Data to the Eventador Pipeline</h2>
+<h2 id="publishing-data-to-the-eventador-pipeline">Publishing Data to the Eventador Pipeline</h2>
 
-<p>Publishing data to the Eventador Pipeline is done via the REST endpoint. It&#39;s important to note that a schema must be defined for the Pipeline before data can be sent to it. In this case we are using serializing data to Apache Avro.</p>
+<p>Publishing data to the Eventador Pipeline is done via the REST endpoint. It’s important to note that a schema must be defined for the Pipeline before data can be sent to it. In this case we are using serializing data to Apache Avro.</p>
 
-<h1>Creating a schema</h1>
+<h1 id="creating-a-schema">Creating a schema</h1>
 
-<p>The examples below assume curl is installed on your system. Instructions are for OSX. Linux uses <code>curl -i</code> vs <code>curl -s</code>. You may need to remove line breaks in the examples. You can also use the utility <a href="https://stedolan.github.io/jq/">jq</a> to format and colorize output on the command line.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">curl -s -X POST -H <span class="s2">"Content-Type: application/vnd.kafka.avro.v1+json"</span> <span class="se">\</span>
+<p>The examples below assume curl is installed on your system. Instructions are for OSX. Linux uses <code class="highlighter-rouge">curl -i</code> vs <code class="highlighter-rouge">curl -s</code>. You may need to remove line breaks in the examples. You can also use the utility <a href="https://stedolan.github.io/jq/">jq</a> to format and colorize output on the command line.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>curl -s -X POST -H <span class="s2">"Content-Type: application/vnd.kafka.avro.v1+json"</span> <span class="se">\</span>
 --data <span class="s1">'{"value_schema": "{\"type\": \"record\",\"name\": \"brewery\",
 \"fields\":[{\"name\": \"sensor\", \"type\":\"string\"},{\"name\": \"temp\", \"type\": \"int\"}]}",
 "records": [{"value": {"sensor": "MashTun1", "temp":28}},{"value": {"sensor": "MashTun2", "temp":27}}]}'</span> <span class="se">\</span>
-https://api.3b4ff5ad.vip.eventador.io/topics/brewery
-</code></pre></div>
+https://api.3b4ff5ad.vip.eventador.io/topics/&lt;username&gt;_brewery
+</code></pre>
+</div>
+
 <p>More information on the REST interface can be <a href="http://docs.confluent.io/3.0.0/kafka-rest/docs/api.html">found here</a>.</p>
 
-<h2>Consuming Data from Eventador</h2>
+<h2 id="consuming-data-from-eventador">Consuming Data from Eventador</h2>
 
 <p>Data can be consumed from Eventador in two ways. It can be directly consumed from the Eventador Pipeline REST interface, or it can be consumed using the Aggregation Interface (PipelineDB).</p>
 
-<h1>Consuming from the Eventador Pipeline using the REST interface</h1>
+<h1 id="consuming-from-the-eventador-pipeline-using-the-rest-interface">Consuming from the Eventador Pipeline using the REST interface</h1>
 
 <p>Consuming data via the REST interface requires two steps. First registering a consumer, then consuming from the pipeline.</p>
 
-<h1>Registering a consumer</h1>
+<h1 id="registering-a-consumer">Registering a consumer</h1>
 
 <p>First we must register a consumer. This ensures Kafka understands state as data is consumed.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">curl -s -X POST -H <span class="s2">"Content-Type: application/vnd.kafka.v1+json"</span> <span class="se">\</span>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>curl -s -X POST -H <span class="s2">"Content-Type: application/vnd.kafka.v1+json"</span> <span class="se">\</span>
 --data <span class="s1">'{"format": "avro", "auto.offset.reset": "smallest"}'</span> <span class="se">\</span>
 https://api.xxxxx.vip.eventador.io/consumers/my_consumer
 
@@ -146,10 +148,13 @@ https://api.xxxxx.vip.eventador.io/consumers/my_consumer
    <span class="s2">"base_uri"</span>: <span class="s2">"https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1"</span>
 <span class="o">}</span>
 
-</code></pre></div>
+</code></pre>
+</div>
+
 <p>Next consume the data using the URI that is returned when we create a consumer.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">curl -s -X GET -H <span class="s2">"Accept: application/vnd.kafka.avro.v1+json"</span> <span class="se">\</span>
-https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/topics/brewery
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>curl -s -X GET -H <span class="s2">"Accept: application/vnd.kafka.avro.v1+json"</span> <span class="se">\</span>
+https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/topics/&lt;username&gt;_brewery
 <span class="o">[</span>
   <span class="o">{</span>
      <span class="s2">"key"</span>: null,
@@ -164,47 +169,57 @@ https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/t
      <span class="s2">"offset"</span>: 1
    <span class="o">}</span>
 <span class="o">]</span>
-</code></pre></div>
-<h1>Consuming from the Eventador Aggregation Interface</h1>
+</code></pre>
+</div>
+
+<h1 id="consuming-from-the-eventador-aggregation-interface">Consuming from the Eventador Aggregation Interface</h1>
 
 <p>The Aggregation Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB SQL syntax and functions.</p>
 
-<p>A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created and has a sample continuous view created on it. You can create continuous views as needed. The continuous view is named <code>ev_sample_view</code> and is available in the users database. The database enforces SSL and causes the client to use SSL by default.</p>
+<p>A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created and has a sample continuous view created on it. You can create continuous views as needed. The continuous view is named <code class="highlighter-rouge">ev_sample_view</code> and is available in the users database. The database enforces SSL and causes the client to use SSL by default.</p>
 
 <p>To login to the database and query the sample view and create more continuous views:</p>
 
 <ul>
-<li>Download the PipelineDB client <a href="https://www.pipelinedb.com/download">here</a>.</li>
-<li>Connect to the database using psql with your username, database. The login information, and hostname is available in the Eventador Console at <code>http://console.eventador.io/pipeline_detail/&lt;pipeline_name&gt;</code>.</li>
-<li>The username is <code>login name</code>, the database name is <code>username_pipelinename</code></li>
+  <li>Download the PipelineDB client <a href="https://www.pipelinedb.com/download">here</a>.</li>
+  <li>Connect to the database using psql with your username, database. The login information, and hostname is available in the Eventador Console at <code class="highlighter-rouge">http://console.eventador.io/pipeline_detail/&lt;pipeline_name&gt;</code>.</li>
+  <li>The username is <code class="highlighter-rouge">login name</code>, the database name is <code class="highlighter-rouge">username_pipelinename</code></li>
 </ul>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">psql -U &lt;username&gt; -h &lt;hostname&gt; -p 9000 &lt;database name&gt;
-</code></pre></div>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>psql -U &lt;username&gt; -h &lt;hostname&gt; -p 9000 &lt;database name&gt;
+</code></pre>
+</div>
+
 <p>Query the sample view:</p>
-<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">ev_sample_view</span> <span class="k">LIMIT</span> <span class="mi">10</span><span class="p">;</span>
-</code></pre></div>
-<p>Continuous views are created on a stream. Every pipeline has a default stream named <code>&lt;pipeline name&gt;_stream</code> created automatically, with a payload field with the data type JSON.</p>
+
+<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">ev_sample_view</span> <span class="k">LIMIT</span> <span class="mi">10</span><span class="p">;</span>
+</code></pre>
+</div>
+
+<p>Continuous views are created on a stream. Every pipeline has a default stream named <code class="highlighter-rouge">&lt;pipeline name&gt;_stream</code> created automatically, with a payload field with the data type JSON.</p>
 
 <p>You can create a new continuous view:</p>
-<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="c1">-- average temperature of sensors over the last 5 minutes by sensor name
+
+<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="c1">-- average temperature of sensors over the last 5 minutes by sensor name
 </span><span class="k">CREATE</span> <span class="n">CONTINUOUS</span> <span class="k">VIEW</span> <span class="n">brewery_sensor_temps</span> <span class="k">WITH</span> <span class="p">(</span><span class="n">max_age</span> <span class="o">=</span> <span class="s1">'5 minutes'</span><span class="p">)</span> <span class="k">AS</span>
-   <span class="k">SELECT</span> <span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="n">sensor</span><span class="p">::</span><span class="n">integer</span><span class="p">,</span> <span class="k">AVG</span><span class="p">(</span><span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="k">temp</span><span class="p">::</span><span class="n">numeric</span><span class="p">)</span>
+   <span class="k">SELECT</span> <span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'sensor'</span><span class="p">,</span> <span class="k">AVG</span><span class="p">((</span><span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'temp'</span><span class="p">::</span><span class="n">text</span><span class="p">)::</span><span class="n">numeric</span><span class="p">)</span>
    <span class="k">FROM</span> <span class="n">brewery_stream</span>
-<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="n">sensor</span><span class="p">;</span>
-</code></pre></div>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'sensor'</span><span class="p">;</span>
+</code></pre>
+</div>
+
 <p>More information on continuous views is available in the <a href="http://docs.pipelinedb.com/continuous-views.html">PipelineDB documentation</a></p>
 
-<h2>Monitoring the pipeline</h2>
+<h2 id="monitoring-the-pipeline">Monitoring the pipeline</h2>
 
 <p>You can monitor your pipeline via the Eventador Console. From the <a href="http://console.eventador.io/pipelines">pipelines</a> click on the pipeline to monitor. The statistics (default) tab shows some metrics about the pipeline.</p>
 
-<h2>Software Versions</h2>
-
+<h2 id="software-versions">Software Versions</h2>
 <ul>
-<li>Kafka v0.10</li>
-<li>Confluent kafka-REST proxy v3.0.0</li>
-<li>Confluent Schema Registry v3.0.0</li>
-<li>PipelineDB 0.9.3/PostgreSQL 9.5</li>
+  <li>Kafka v0.10</li>
+  <li>Confluent kafka-REST proxy v3.0.0</li>
+  <li>Confluent Schema Registry v3.0.0</li>
+  <li>PipelineDB 0.9.3/PostgreSQL 9.5</li>
 </ul>
 
   </div>

@@ -4,6 +4,7 @@ title: Documentation
 permalink: /documentation/
 ---
 <div>
+<hr><br>
 {% for doc in site.documentation %}
       <li>
         <a href="{{ doc.url }}">{{ doc.title }}</a>
