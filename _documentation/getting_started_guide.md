@@ -46,6 +46,7 @@ A pipeline can now be created on the deployment.
 
 # Understanding Endpoints
 Endpoints are found by selecting [Pipelines](http://console.eventador.io/pipelines) tab, then the pipeline, then connections. There are connection strings for:
+
 - Pipeline REST Interface: Produce
 - Pipeline Rest Interface: consume
 - Aggregation Interface (PipelineDB): Consume

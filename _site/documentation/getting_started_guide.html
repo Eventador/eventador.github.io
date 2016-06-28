@@ -60,7 +60,7 @@
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Getting Started Guide</h1>
-    <p class="post-meta"><time datetime="2016-06-28T18:30:29-05:00" itemprop="datePublished">Jun 28, 2016</time></p>
+    <p class="post-meta"><time datetime="2016-06-28T18:46:40-05:00" itemprop="datePublished">Jun 28, 2016</time></p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
@@ -108,6 +108,17 @@
   <li>Name the pipeline, give it a description, select the Deployment that was just created, and give a user/password for the data store.</li>
   <li>Click create. A pipeline is now created and can be seen under the <a href="http://console.eventador.io/pipelines">Pipelines</a> tab.</li>
 </ul>
+
+<h1 id="understanding-endpoints">Understanding Endpoints</h1>
+<p>Endpoints are found by selecting <a href="http://console.eventador.io/pipelines">Pipelines</a> tab, then the pipeline, then connections. There are connection strings for:</p>
+
+<ul>
+  <li>Pipeline REST Interface: Produce</li>
+  <li>Pipeline Rest Interface: consume</li>
+  <li>Aggregation Interface (PipelineDB): Consume</li>
+</ul>
+
+<p>These endpoints will be needed to produce and consume data from your new pipeline.</p>
 
 <h2 id="publishing-data-to-the-eventador-pipeline">Publishing Data to the Eventador Pipeline</h2>
 
