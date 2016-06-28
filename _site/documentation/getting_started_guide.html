@@ -60,7 +60,7 @@
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Getting Started Guide</h1>
-    <p class="post-meta"><time datetime="2016-06-28T17:06:50-05:00" itemprop="datePublished">Jun 28, 2016</time></p>
+    <p class="post-meta"><time datetime="2016-06-28T17:18:06-05:00" itemprop="datePublished">Jun 28, 2016</time></p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
@@ -86,7 +86,7 @@
 
 <h2>Building Pipelines</h2>
 
-<p>Pipelines are created on a deployment. So a deployment must first be created for the pipeline to reside on. A deployment is a group of AWS compute resources under the pipeline. Multiple pipelines may exist on a deployment. Deployments are scaled independently of each other. A pipeline a Kafka topic and all the associated components including a PipelineDB role and database.</p>
+<p>Pipelines are created on a deployment. So a deployment must first be created for the pipeline. A deployment is a group of AWS compute resources. Multiple pipelines may exist on a single deployment. Deployments are scaled independently of each other. When a pipeline is created, a Kafka topic is created for that pipeline along with all the required plumbing and components.</p>
 
 <p>The <a href="https://console.eventador.io">Eventador Console</a> allows for creation of a deployments and pipelines.</p>
 
@@ -117,7 +117,7 @@
 
 <h1>Creating a schema</h1>
 
-<p>The examples below assume curl is installed on your system. Instructions are for OSX. Linux uses <code>curl -i</code> vs <code>curl -s</code>. You can also use the utility <a href="https://stedolan.github.io/jq/">jq</a> to format and colorize output on the command line.</p>
+<p>The examples below assume curl is installed on your system. Instructions are for OSX. Linux uses <code>curl -i</code> vs <code>curl -s</code>. You may need to remove line breaks in the examples. You can also use the utility <a href="https://stedolan.github.io/jq/">jq</a> to format and colorize output on the command line.</p>
 <div class="highlight"><pre><code class="language-bash" data-lang="bash">curl -s -X POST -H <span class="s2">"Content-Type: application/vnd.kafka.avro.v1+json"</span> <span class="se">\</span>
 --data <span class="s1">'{"value_schema": "{\"type\": \"record\",\"name\": \"brewery\",
 \"fields\":[{\"name\": \"sensor\", \"type\":\"string\"},{\"name\": \"temp\", \"type\": \"int\"}]}",
@@ -147,7 +147,7 @@ https://api.xxxxx.vip.eventador.io/consumers/my_consumer
 <span class="o">}</span>
 
 </code></pre></div>
-<p>Next consume the data from the URI that is returned when we create a consumer.</p>
+<p>Next consume the data using the URI that is returned when we create a consumer.</p>
 <div class="highlight"><pre><code class="language-bash" data-lang="bash">curl -s -X GET -H <span class="s2">"Accept: application/vnd.kafka.avro.v1+json"</span> <span class="se">\</span>
 https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/topics/brewery
 <span class="o">[</span>
@@ -167,7 +167,7 @@ https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/t
 </code></pre></div>
 <h1>Consuming from the Eventador Aggregation Interface</h1>
 
-<p>The Aggregation Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB syntax.</p>
+<p>The Aggregation Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB SQL syntax and functions.</p>
 
 <p>A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created and has a sample continuous view created on it. You can create continuous views as needed. The continuous view is named <code>ev_sample_view</code> and is available in the users database. The database enforces SSL and causes the client to use SSL by default.</p>
 
@@ -249,7 +249,7 @@ https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/t
       </div>
 
       <div class="footer-col footer-col-3">
-        <p>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+        <p>Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.
 </p>
       </div>
     </div>
