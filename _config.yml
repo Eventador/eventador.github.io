@@ -18,7 +18,8 @@ twitter_username: eventadorlabs
 github_username:  eventador
 
 # Build settings
-markdown: kramdown
+markdown: redcarpet
+highlighter: rouge
 
 collections:
   documentation:

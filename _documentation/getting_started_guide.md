@@ -3,6 +3,10 @@ layout: post
 title: Getting Started Guide
 ---
 
+## Beta
+
+Eventador.io is currently in Beta. Please submit feedback to [hello@eventador.io](mailto:hello@eventador.io)
+
 ## Getting Started
 
 Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.
@@ -21,7 +25,7 @@ To get started you must have an account. [Register here](http://console.eventado
 
 ## Building Pipelines
 
-Pipelines are created on a deployment. So a deployment must first be created for the pipeline to reside on. A deployment is a group of AWS compute resources under the pipeline. Multiple pipelines may exist on a deployment. Deployments are scaled independently of each other.
+Pipelines are created on a deployment. So a deployment must first be created for the pipeline to reside on. A deployment is a group of AWS compute resources under the pipeline. Multiple pipelines may exist on a deployment. Deployments are scaled independently of each other. A pipeline a Kafka topic and all the associated components including a PipelineDB role and database.
 
 The [Eventador Console](https://console.eventador.io) allows for creation of a deployments and pipelines.
 
@@ -42,37 +46,65 @@ A pipeline can now be created on the deployment.
 
 ## Publishing Data to the Eventador Pipeline
 
-```
-curl -X POST -H "Content-Type: application/vnd.kafka.avro.v1+json" \
-      --data '{"value_schema": "{\"type\": \"record\", \"name\": \"User\", \"fields\": [{\"name\": \"name\", \"type\": \"string\"}]}", "records": [{"value": {"name": "testUser"}}]}' \
-      "http://localhost:8082/topics/avrotest"
-  {"offsets":[{"partition":0,"offset":0,"error_code":null,"error":null}],"key_schema_id":null,"value_schema_id":21}
+Publishing data to the Eventador Pipeline is done via the REST endpoint. It's important to note that a schema must be defined for the Pipeline before data can be sent to it. In this case we are using serializing data to Apache Avro.
+
+# Creating a schema
+
+The examples below assume curl is installed on your system. Instructions are for OSX. Linux uses ```curl -i``` vs ```curl -s```. You can also use the utility [jq](https://stedolan.github.io/jq/) to format and colorize output on the command line.
+
+```bash
+curl -s -X POST -H "Content-Type: application/vnd.kafka.avro.v1+json" \
+--data '{"value_schema": "{\"type\": \"record\",\"name\": \"brewery\",
+\"fields\":[{\"name\": \"sensor\", \"type\":\"string\"},{\"name\": \"temp\", \"type\": \"int\"}]}",
+"records": [{"value": {"sensor": "MashTun1", "temp":28}},{"value": {"sensor": "MashTun2", "temp":27}}]}' \
+https://api.3b4ff5ad.vip.eventador.io/topics/brewery
 ```
 
-# Publishing data to the pipeline
-
-Once a schema is created users can publish data to the REST endpoint.
-
-```
-curl -X POST -H "Content-Type: application/vnd.kafka.avro.v1+json" \
-      --data '{"value_schema": "{\"type\": \"record\", \"name\": \"User\", \"fields\": [{\"name\": \"name\", \"type\": \"string\"}]}", "records": [{"value": {"name": "testUser"}}]}' \
-      "http://localhost:8082/topics/avrotest"
-  {"offsets":[{"partition":0,"offset":0,"error_code":null,"error":null}],"key_schema_id":null,"value_schema_id":21}
-```
+More information on the REST interface can be [found here](http://docs.confluent.io/3.0.0/kafka-rest/docs/api.html).
 
 ## Consuming Data from Eventador
 
-Data can be consumed from Eventador in two ways. It can be directly consumed from the Kafka REST interface, or it can be consumed using the Aggregation Interface.
+Data can be consumed from Eventador in two ways. It can be directly consumed from the Eventador Pipeline REST interface, or it can be consumed using the Aggregation Interface (PipelineDB).
 
-# Consuming from the Eventador Pipeline
+# Consuming from the Eventador Pipeline using the REST interface
 
-Consuming data via the REST interface:
+Consuming data via the REST interface requires two steps. First registering a consumer, then consuming from the pipeline.
+
+# Registering a consumer
+
+First we must register a consumer. This ensures Kafka understands state as data is consumed.
+
+```bash
+curl -s -X POST -H "Content-Type: application/vnd.kafka.v1+json" \
+--data '{"format": "avro", "auto.offset.reset": "smallest"}' \
+https://api.xxxxx.vip.eventador.io/consumers/my_consumer
+
+{
+  "instance_id": "rest-consumer-1",
+   "base_uri": "https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1"
+}
 
 ```
-curl -X POST -H "Content-Type: application/vnd.kafka.v1+json" \
-      --data '{"id": "my_instance", "format": "avro", "auto.offset.reset": "smallest"}' \
-      http://localhost:8082/consumers/my_avro_consumer
-{"instance_id":"my_instance","base_uri":"http://localhost:8082/consumers/my_avro_consumer/instances/my_instance"}
+
+Next consume the data from the URI that is returned when we create a consumer.
+
+```bash
+curl -s -X GET -H "Accept: application/vnd.kafka.avro.v1+json" \
+https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/topics/brewery
+[
+  {
+     "key": null,
+     "value": {"sensor": "MashTun1", "temp": 28},
+     "partition": 0,
+     "offset": 0
+   },
+   {
+     "key": null,
+     "value": {"sensor": "MashTun2", "temp": 27},
+     "partition": 0,
+     "offset": 1
+   }
+]
 ```
 
 # Consuming from the Eventador Aggregation Interface
@@ -87,13 +119,13 @@ To login to the database and query the sample view and create more continuous vi
 - Connect to the database using psql with your username, database. The login information, and hostname is available in the Eventador Console at ```http://console.eventador.io/pipeline_detail/<pipeline_name>```.
 - The username is ```login name```, the database name is ```username_pipelinename```
 
-```
+```bash
 psql -U <username> -h <hostname> -p 9000 <database name>
 ```
 
 Query the sample view:
 
-```
+```sql
 SELECT * FROM ev_sample_view LIMIT 10;
 ```
 
@@ -101,10 +133,11 @@ Continuous views are created on a stream. Every pipeline has a default stream na
 
 You can create a new continuous view:
 
-```
-CREATE CONTINUOUS VIEW sensor_temps WITH (max_age = '5 minutes') AS
+```sql
+-- average temperature of sensors over the last 5 minutes by sensor name
+CREATE CONTINUOUS VIEW brewery_sensor_temps WITH (max_age = '5 minutes') AS
    SELECT payload->>sensor::integer, AVG(payload->>temp::numeric)
-   FROM sensor_stream
+   FROM brewery_stream
 GROUP BY payload->>sensor;
 ```
 
@@ -114,7 +147,7 @@ More information on continuous views is available in the [PipelineDB documentati
 
 You can monitor your pipeline via the Eventador Console. From the [pipelines](http://console.eventador.io/pipelines) click on the pipeline to monitor. The statistics (default) tab shows some metrics about the pipeline.
 
-## Versions
+## Software Versions
 - Kafka v0.10
 - Confluent kafka-REST proxy v3.0.0
 - Confluent Schema Registry v3.0.0
