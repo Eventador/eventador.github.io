@@ -25,7 +25,7 @@ To get started you must have an account. [Register here](http://console.eventado
 
 ## Building Pipelines
 
-Pipelines are created on a deployment. So a deployment must first be created for the pipeline to reside on. A deployment is a group of AWS compute resources under the pipeline. Multiple pipelines may exist on a deployment. Deployments are scaled independently of each other. A pipeline a Kafka topic and all the associated components including a PipelineDB role and database.
+Pipelines are created on a deployment. So a deployment must first be created for the pipeline. A deployment is a group of AWS compute resources. Multiple pipelines may exist on a single deployment. Deployments are scaled independently of each other. When a pipeline is created, a Kafka topic is created for that pipeline along with all the required plumbing and components.
 
 The [Eventador Console](https://console.eventador.io) allows for creation of a deployments and pipelines.
 
@@ -50,7 +50,7 @@ Publishing data to the Eventador Pipeline is done via the REST endpoint. It's im
 
 # Creating a schema
 
-The examples below assume curl is installed on your system. Instructions are for OSX. Linux uses ```curl -i``` vs ```curl -s```. You can also use the utility [jq](https://stedolan.github.io/jq/) to format and colorize output on the command line.
+The examples below assume curl is installed on your system. Instructions are for OSX. Linux uses ```curl -i``` vs ```curl -s```. You may need to remove line breaks in the examples. You can also use the utility [jq](https://stedolan.github.io/jq/) to format and colorize output on the command line.
 
 ```bash
 curl -s -X POST -H "Content-Type: application/vnd.kafka.avro.v1+json" \
@@ -86,7 +86,7 @@ https://api.xxxxx.vip.eventador.io/consumers/my_consumer
 
 ```
 
-Next consume the data from the URI that is returned when we create a consumer.
+Next consume the data using the URI that is returned when we create a consumer.
 
 ```bash
 curl -s -X GET -H "Accept: application/vnd.kafka.avro.v1+json" \
@@ -109,7 +109,7 @@ https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/t
 
 # Consuming from the Eventador Aggregation Interface
 
-The Aggregation Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB syntax.
+The Aggregation Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB SQL syntax and functions.
 
 A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created and has a sample continuous view created on it. You can create continuous views as needed. The continuous view is named ```ev_sample_view``` and is available in the users database. The database enforces SSL and causes the client to use SSL by default.
 
