@@ -44,6 +44,14 @@ A pipeline can now be created on the deployment.
 - Name the pipeline, give it a description, select the Deployment that was just created, and give a user/password for the data store.
 - Click create. A pipeline is now created and can be seen under the [Pipelines](http://console.eventador.io/pipelines) tab.
 
+# Understanding Endpoints
+Endpoints are found by selecting [Pipelines](http://console.eventador.io/pipelines) tab, then the pipeline, then connections. There are connection strings for:
+- Pipeline REST Interface: Produce
+- Pipeline Rest Interface: consume
+- Aggregation Interface (PipelineDB): Consume
+
+These endpoints will be needed to produce and consume data from your new pipeline.
+
 ## Publishing Data to the Eventador Pipeline
 
 Publishing data to the Eventador Pipeline is done via the REST endpoint. It's important to note that a schema must be defined for the Pipeline before data can be sent to it. In this case we are using serializing data to Apache Avro.
