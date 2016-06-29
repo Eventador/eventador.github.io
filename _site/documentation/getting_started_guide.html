@@ -60,7 +60,7 @@
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Getting Started Guide</h1>
-    <p class="post-meta"><time datetime="2016-06-29T14:41:10-05:00" itemprop="datePublished">Jun 29, 2016</time></p>
+    <p class="post-meta"><time datetime="2016-06-29T14:51:24-05:00" itemprop="datePublished">Jun 29, 2016</time></p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
@@ -134,14 +134,14 @@
 
 <span class="n">username</span> <span class="o">=</span> <span class="s">"myusername"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
 <span class="n">endpoint</span> <span class="o">=</span> <span class="s">"xxxxxx"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
-<span class="n">schema</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># change me to the pipeline name    </span>
-<span class="n">namespace</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># change me to the pipeline name    </span>
+<span class="n">topic</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
 <span class="n">uri</span> <span class="o">=</span> <span class="s">"https://schema-registry.{}.vip.eventador.io/subjects/{}-value/versions"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">namespace</span><span class="p">)</span>
 
 <span class="n">payload</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">payload</span><span class="p">[</span><span class="s">'schema'</span><span class="p">]</span> <span class="o">=</span> <span class="s">"""
   {"type": "record",
-   "name": "brewery2",
+   "name": "mybreweryschema",
    "fields": [
       {"name": "sensor", "type": "string"},
       {"name": "temp", "type": "int"}
@@ -165,8 +165,8 @@
 
 <span class="n">username</span> <span class="o">=</span> <span class="s">"myusername"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
 <span class="n">endpoint</span> <span class="o">=</span> <span class="s">"xxxxxx"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
-<span class="n">schema</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># change me to the pipeline name   </span>
-<span class="n">namespace</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># change me to the pipeline name   </span>
+<span class="n">topic</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
 <span class="n">schema_id</span> <span class="o">=</span> <span class="s">"52"</span> <span class="c"># change to the value returned from the previous step</span>
 <span class="n">uri</span> <span class="o">=</span> <span class="s">"https://api.{}.vip.eventador.io/topics/{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">namespace</span><span class="p">)</span>
 

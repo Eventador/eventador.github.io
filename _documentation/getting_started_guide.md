@@ -68,14 +68,14 @@ from pprint import pprint
 
 username = "myusername" # change me to value in console->pipeline->connections
 endpoint = "xxxxxx" # change me to value in console->pipeline->connections
-schema = "brewery"  # change me to the pipeline name    
-namespace = "{}_{}".format(username, schema)
+pipeline = "brewery"  # change me to the pipeline name    
+topic = "{}_{}".format(username, schema)
 uri = "https://schema-registry.{}.vip.eventador.io/subjects/{}-value/versions".format(endpoint, namespace)
 
 payload = {}
 payload['schema'] = """
   {"type": "record",
-   "name": "brewery2",
+   "name": "mybreweryschema",
    "fields": [
       {"name": "sensor", "type": "string"},
       {"name": "temp", "type": "int"}
@@ -100,8 +100,8 @@ import requests
 
 username = "myusername" # change me to value in console->pipeline->connections
 endpoint = "xxxxxx" # change me to value in console->pipeline->connections
-schema = "brewery"  # change me to the pipeline name   
-namespace = "{}_{}".format(username, schema)
+pipeline = "brewery"  # change me to the pipeline name   
+topic = "{}_{}".format(username, schema)
 schema_id = "52" # change to the value returned from the previous step
 uri = "https://api.{}.vip.eventador.io/topics/{}".format(endpoint, namespace)
 
