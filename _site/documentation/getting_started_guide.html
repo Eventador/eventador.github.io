@@ -60,7 +60,7 @@
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Getting Started Guide</h1>
-    <p class="post-meta"><time datetime="2016-06-29T14:51:24-05:00" itemprop="datePublished">Jun 29, 2016</time></p>
+    <p class="post-meta"><time datetime="2016-06-29T15:33:32-05:00" itemprop="datePublished">Jun 29, 2016</time></p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
@@ -76,7 +76,7 @@
 
 <p>You produce data to Eventador using a REST interface, and consume data via the same REST interface. The REST interface also provides control over Kafka topics and schema. You can create multiple pipelines to form more complex event processing systems.</p>
 
-<p>You may also consume data via the SQL Interface. The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build ‘continuous views’ to aggregate, query, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the SQL Interface.</p>
+<p>You may also consume data via the SQL Interface. The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build ‘continuous views’ to aggregate, time-slice, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the SQL Interface.</p>
 
 <p>Getting started with Eventador takes just a few simple steps.</p>
 
@@ -86,7 +86,7 @@
 
 <h2 id="building-pipelines">Building Pipelines</h2>
 
-<p>Pipelines are created on a deployment. So a deployment must first be created for the pipeline. A deployment is a group of AWS compute resources. Multiple pipelines may exist on a single deployment. Deployments are scaled independently of each other. When a pipeline is created, a Kafka topic is created for that pipeline along with all the required plumbing and components.</p>
+<p>Pipelines are created on a deployment. A deployment must first be created for the pipeline. A deployment is a group of AWS compute resources. Multiple pipelines may exist on a single deployment. Deployments are scaled independently of each other. When a pipeline is created, a Kafka topic is created for that pipeline along with all the required plumbing and components.</p>
 
 <p>The <a href="https://console.eventador.io">Eventador Console</a> allows for creation of a deployments and pipelines.</p>
 
@@ -96,7 +96,7 @@
   <li>Select the ‘Create Deployment’ button.</li>
   <li>Name the deployment, and select the compute resource style appropriate for the workload being run.</li>
   <li>Click create. A deployment may take a bit of time to provision. A deployment can not be used until it’s status is ‘Active’ in the <a href="http://console.eventador.io/deployments">Deployments</a> tab.</li>
-  <li>An ACL must be created to allow the producers to connect. On the [Deployments] tab, select the deployment-&gt;ACLS-&gt;add ACL. Add in a CIDR notation for the IP to whitelist.</li>
+  <li>An ACL must be created to allow the producers to connect. On the <a href="http://console.eventador.io/deployments">Deployments</a> tab, select the deployment-&gt;ACLS-&gt;add ACL. Add a value in CIDR notation for the IP to whitelist.</li>
 </ul>
 
 <p>A pipeline can now be created on the deployment.</p>
@@ -113,18 +113,16 @@
 <p>Endpoints are found by selecting <a href="http://console.eventador.io/pipelines">Pipelines</a> tab, then the pipeline, then connections. There are connection strings for:</p>
 
 <ul>
-  <li>Pipeline REST Interface: Produce</li>
+  <li>Pipeline REST Interface: produce</li>
   <li>Pipeline Rest Interface: consume</li>
-  <li>SQL Interface (PipelineDB): Consume</li>
+  <li>SQL Interface (PipelineDB): consume</li>
 </ul>
 
 <p>These endpoints will be needed to produce and consume data from your new pipeline.</p>
 
 <h2 id="publishing-data-to-the-eventador-pipeline">Publishing Data to the Eventador Pipeline</h2>
 
-<p>Publishing data to the Eventador Pipeline is done via the REST endpoint. It’s important to note that a schema must be defined for the Pipeline before data can be sent to it. In this case we are using serializing data to Apache Avro.</p>
-
-<p>The examples below assume python is installed on your system.</p>
+<p>Publishing data to the Eventador Pipeline is done via the REST endpoint. It’s important to note that a schema must be defined for the Pipeline before data can be sent to it. The examples below assume python is installed on your system.</p>
 
 <h1 id="creating-a-schema">Creating a schema</h1>
 
@@ -135,9 +133,10 @@
 <span class="n">username</span> <span class="o">=</span> <span class="s">"myusername"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
 <span class="n">endpoint</span> <span class="o">=</span> <span class="s">"xxxxxx"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
 <span class="n">pipeline</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># change me to the pipeline name    </span>
-<span class="n">topic</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
-<span class="n">uri</span> <span class="o">=</span> <span class="s">"https://schema-registry.{}.vip.eventador.io/subjects/{}-value/versions"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">namespace</span><span class="p">)</span>
+<span class="n">topic</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">)</span>
+<span class="n">uri</span> <span class="o">=</span> <span class="s">"https://schema-registry.{}.vip.eventador.io/subjects/{}-value/versions"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
 
+<span class="c"># schema is two values: sensor (string), temp (int)</span>
 <span class="n">payload</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">payload</span><span class="p">[</span><span class="s">'schema'</span><span class="p">]</span> <span class="o">=</span> <span class="s">"""
   {"type": "record",
@@ -157,7 +156,7 @@
 </code></pre>
 </div>
 
-<p>This code will return a schema ID value. This is used when sending data into the pipeline.</p>
+<p>This code will return a schema ID. This value is used when sending data into the pipeline.</p>
 
 <h1 id="sending-data-to-eventador-pipeline">Sending data to Eventador Pipeline</h1>
 <div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
@@ -166,16 +165,16 @@
 <span class="n">username</span> <span class="o">=</span> <span class="s">"myusername"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
 <span class="n">endpoint</span> <span class="o">=</span> <span class="s">"xxxxxx"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
 <span class="n">pipeline</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># change me to the pipeline name   </span>
-<span class="n">topic</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+<span class="n">topic</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">)</span>
 <span class="n">schema_id</span> <span class="o">=</span> <span class="s">"52"</span> <span class="c"># change to the value returned from the previous step</span>
-<span class="n">uri</span> <span class="o">=</span> <span class="s">"https://api.{}.vip.eventador.io/topics/{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">namespace</span><span class="p">)</span>
+<span class="n">uri</span> <span class="o">=</span> <span class="s">"https://api.{}.vip.eventador.io/topics/{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
 
 <span class="n">payload</span> <span class="o">=</span> <span class="p">{}</span>
 
 <span class="c"># this is the ID for the schema to use, it was returned in the previous step</span>
 <span class="n">payload</span><span class="p">[</span><span class="s">'value_schema_id'</span><span class="p">]</span> <span class="o">=</span> <span class="s">"{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">schema_id</span><span class="p">)</span>
 
-<span class="c"># this is the data being sent in</span>
+<span class="c"># this is the data you want to send in</span>
 <span class="n">payload</span><span class="p">[</span><span class="s">'records'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
   <span class="p">{</span><span class="s">"value"</span><span class="p">:</span> <span class="p">{</span><span class="s">"sensor"</span><span class="p">:</span> <span class="s">"MashTun1"</span><span class="p">,</span> <span class="s">"temp"</span><span class="p">:</span><span class="mi">99</span><span class="p">}},</span>
   <span class="p">{</span><span class="s">"value"</span><span class="p">:</span> <span class="p">{</span><span class="s">"sensor"</span><span class="p">:</span> <span class="s">"MashTun2"</span><span class="p">,</span> <span class="s">"temp"</span><span class="p">:</span><span class="mi">42</span><span class="p">}}</span>
@@ -239,16 +238,16 @@ https://api.xxxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/
 
 <h1 id="consuming-from-the-eventador-sql-interface">Consuming from the Eventador SQL Interface</h1>
 
-<p>The SQL Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB SQL syntax and functions.</p>
+<p>The SQL Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, advanced analytics, or anything else as defined by the PipelineDB SQL syntax and functions.</p>
 
-<p>A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created and has a sample continuous view created on it. You can create continuous views as needed. A sample view is created named <code class="highlighter-rouge">ev_sample_view</code> and is available in the users database. The database enforces SSL and causes the client to use SSL by default.</p>
+<p>A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created. A sample continuous view is created named <code class="highlighter-rouge">ev_sample_view</code>. You can create more continuous views as needed. The database enforces SSL and causes the client to use SSL by default.</p>
 
 <p>To login to the database and query the sample view and create more continuous views:</p>
 
 <ul>
   <li>Download the PipelineDB client <a href="https://www.pipelinedb.com/download">here</a>.</li>
   <li>Connect to the database using psql with your username, database. The login information, and hostname is available in the Eventador <a href="http://console.eventador.io/pipelines">Console</a>, select the pipeline then connections.</li>
-  <li>By connvention, the database username is your login username, and the database_name is username_pipelinename.</li>
+  <li>By convention, the database username is your login username, and the database_name is username_pipelinename.</li>
 </ul>
 
 <div class="language-bash highlighter-rouge"><pre class="highlight"><code>psql -U &lt;username&gt; -h &lt;hostname&gt; -p 9000 &lt;database_name&gt;
@@ -257,7 +256,8 @@ https://api.xxxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/
 
 <p>Query the sample view:</p>
 
-<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">ev_sample_view</span> <span class="k">LIMIT</span> <span class="mi">10</span><span class="p">;</span>
+<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="c1">-- just select some basic data
+</span><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">ev_sample_view</span> <span class="k">LIMIT</span> <span class="mi">10</span><span class="p">;</span>
 </code></pre>
 </div>
 
@@ -270,6 +270,17 @@ https://api.xxxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/
    <span class="k">SELECT</span> <span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'sensor'</span><span class="p">,</span> <span class="k">AVG</span><span class="p">((</span><span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'temp'</span><span class="p">::</span><span class="n">text</span><span class="p">)::</span><span class="n">numeric</span><span class="p">)</span>
    <span class="k">FROM</span> <span class="n">brewery_stream</span>
 <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'sensor'</span><span class="p">;</span>
+</code></pre>
+</div>
+
+<p>or</p>
+
+<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="c1">-- average temperature by hour of day
+</span><span class="k">CREATE</span> <span class="n">CONTINUOUS</span> <span class="k">VIEW</span> <span class="n">brewery_temps_by_hourofday</span> <span class="k">AS</span>
+<span class="k">SELECT</span> <span class="n">date_part</span><span class="p">(</span><span class="s1">'hour'</span><span class="p">,</span> <span class="n">arrival_timestamp</span><span class="p">)</span> <span class="k">as</span> <span class="n">ts</span><span class="p">,</span>
+<span class="k">avg</span><span class="p">((</span><span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'temp'</span><span class="p">::</span><span class="n">text</span><span class="p">)::</span><span class="n">numeric</span><span class="p">)</span>
+<span class="k">FROM</span> <span class="n">brewery_stream</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">ts</span><span class="p">;</span>
 </code></pre>
 </div>
 

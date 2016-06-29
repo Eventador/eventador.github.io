@@ -15,7 +15,7 @@ Eventador provides a producer and consumer interfaces. It also provides an SQL I
 
 You produce data to Eventador using a REST interface, and consume data via the same REST interface. The REST interface also provides control over Kafka topics and schema. You can create multiple pipelines to form more complex event processing systems.
 
-You may also consume data via the SQL Interface. The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build 'continuous views' to aggregate, query, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the SQL Interface.
+You may also consume data via the SQL Interface. The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build 'continuous views' to aggregate, time-slice, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the SQL Interface.
 
 Getting started with Eventador takes just a few simple steps.
 
@@ -25,7 +25,7 @@ To get started you must have an account. [Register here](http://console.eventado
 
 ## Building Pipelines
 
-Pipelines are created on a deployment. So a deployment must first be created for the pipeline. A deployment is a group of AWS compute resources. Multiple pipelines may exist on a single deployment. Deployments are scaled independently of each other. When a pipeline is created, a Kafka topic is created for that pipeline along with all the required plumbing and components.
+Pipelines are created on a deployment. A deployment must first be created for the pipeline. A deployment is a group of AWS compute resources. Multiple pipelines may exist on a single deployment. Deployments are scaled independently of each other. When a pipeline is created, a Kafka topic is created for that pipeline along with all the required plumbing and components.
 
 The [Eventador Console](https://console.eventador.io) allows for creation of a deployments and pipelines.
 
@@ -34,7 +34,7 @@ The [Eventador Console](https://console.eventador.io) allows for creation of a d
 - Select the 'Create Deployment' button.
 - Name the deployment, and select the compute resource style appropriate for the workload being run.
 - Click create. A deployment may take a bit of time to provision. A deployment can not be used until it's status is 'Active' in the [Deployments](http://console.eventador.io/deployments) tab.
-- An ACL must be created to allow the producers to connect. On the [Deployments] tab, select the deployment->ACLS->add ACL. Add in a CIDR notation for the IP to whitelist.
+- An ACL must be created to allow the producers to connect. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->ACLS->add ACL. Add a value in CIDR notation for the IP to whitelist.
 
 A pipeline can now be created on the deployment.
 
@@ -47,17 +47,15 @@ A pipeline can now be created on the deployment.
 # Understanding Endpoints
 Endpoints are found by selecting [Pipelines](http://console.eventador.io/pipelines) tab, then the pipeline, then connections. There are connection strings for:
 
-- Pipeline REST Interface: Produce
+- Pipeline REST Interface: produce
 - Pipeline Rest Interface: consume
-- SQL Interface (PipelineDB): Consume
+- SQL Interface (PipelineDB): consume
 
 These endpoints will be needed to produce and consume data from your new pipeline.
 
 ## Publishing Data to the Eventador Pipeline
 
-Publishing data to the Eventador Pipeline is done via the REST endpoint. It's important to note that a schema must be defined for the Pipeline before data can be sent to it. In this case we are using serializing data to Apache Avro.
-
-The examples below assume python is installed on your system.
+Publishing data to the Eventador Pipeline is done via the REST endpoint. It's important to note that a schema must be defined for the Pipeline before data can be sent to it. The examples below assume python is installed on your system.
 
 # Creating a schema
 
@@ -69,9 +67,10 @@ from pprint import pprint
 username = "myusername" # change me to value in console->pipeline->connections
 endpoint = "xxxxxx" # change me to value in console->pipeline->connections
 pipeline = "brewery"  # change me to the pipeline name    
-topic = "{}_{}".format(username, schema)
-uri = "https://schema-registry.{}.vip.eventador.io/subjects/{}-value/versions".format(endpoint, namespace)
+topic = "{}_{}".format(username, pipeline)
+uri = "https://schema-registry.{}.vip.eventador.io/subjects/{}-value/versions".format(endpoint, topic)
 
+# schema is two values: sensor (string), temp (int)
 payload = {}
 payload['schema'] = """
   {"type": "record",
@@ -90,7 +89,7 @@ r = requests.post(uri,
 pprint(r.json())
 ```
 
-This code will return a schema ID value. This is used when sending data into the pipeline.
+This code will return a schema ID. This value is used when sending data into the pipeline.
 
 
 # Sending data to Eventador Pipeline
@@ -101,16 +100,16 @@ import requests
 username = "myusername" # change me to value in console->pipeline->connections
 endpoint = "xxxxxx" # change me to value in console->pipeline->connections
 pipeline = "brewery"  # change me to the pipeline name   
-topic = "{}_{}".format(username, schema)
+topic = "{}_{}".format(username, pipeline)
 schema_id = "52" # change to the value returned from the previous step
-uri = "https://api.{}.vip.eventador.io/topics/{}".format(endpoint, namespace)
+uri = "https://api.{}.vip.eventador.io/topics/{}".format(endpoint, topic)
 
 payload = {}
 
 # this is the ID for the schema to use, it was returned in the previous step
 payload['value_schema_id'] = "{}".format(schema_id)
 
-# this is the data being sent in
+# this is the data you want to send in
 payload['records'] = [
   {"value": {"sensor": "MashTun1", "temp":99}},
   {"value": {"sensor": "MashTun2", "temp":42}}
@@ -173,15 +172,15 @@ https://api.xxxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/
 
 # Consuming from the Eventador SQL Interface
 
-The SQL Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB SQL syntax and functions.
+The SQL Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, advanced analytics, or anything else as defined by the PipelineDB SQL syntax and functions.
 
-A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created and has a sample continuous view created on it. You can create continuous views as needed. A sample view is created named ```ev_sample_view``` and is available in the users database. The database enforces SSL and causes the client to use SSL by default.
+A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created. A sample continuous view is created named ```ev_sample_view```. You can create more continuous views as needed. The database enforces SSL and causes the client to use SSL by default.
 
 To login to the database and query the sample view and create more continuous views:
 
 - Download the PipelineDB client [here](https://www.pipelinedb.com/download).
 - Connect to the database using psql with your username, database. The login information, and hostname is available in the Eventador [Console](http://console.eventador.io/pipelines), select the pipeline then connections.
-- By connvention, the database username is your login username, and the database_name is username_pipelinename.
+- By convention, the database username is your login username, and the database_name is username_pipelinename.
 
 ```bash
 psql -U <username> -h <hostname> -p 9000 <database_name>
@@ -190,6 +189,7 @@ psql -U <username> -h <hostname> -p 9000 <database_name>
 Query the sample view:
 
 ```sql
+-- just select some basic data
 SELECT * FROM ev_sample_view LIMIT 10;
 ```
 
@@ -203,6 +203,17 @@ CREATE CONTINUOUS VIEW brewery_sensor_temps WITH (max_age = '5 minutes') AS
    SELECT payload->>'sensor', AVG((payload->>'temp'::text)::numeric)
    FROM brewery_stream
 GROUP BY payload->>'sensor';
+```
+
+or
+
+```sql
+-- average temperature by hour of day
+CREATE CONTINUOUS VIEW brewery_temps_by_hourofday AS
+SELECT date_part('hour', arrival_timestamp) as ts,
+avg((payload->>'temp'::text)::numeric)
+FROM brewery_stream
+GROUP BY ts;
 ```
 
 More information on continuous views is available in the [PipelineDB documentation](http://docs.pipelinedb.com/continuous-views.html)
