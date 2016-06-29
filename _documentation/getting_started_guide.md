@@ -57,16 +57,71 @@ These endpoints will be needed to produce and consume data from your new pipelin
 
 Publishing data to the Eventador Pipeline is done via the REST endpoint. It's important to note that a schema must be defined for the Pipeline before data can be sent to it. In this case we are using serializing data to Apache Avro.
 
+The examples below assume python is installed on your system.
+
 # Creating a schema
 
-The examples below assume curl is installed on your system. Instructions are for OSX. Linux uses ```curl -i``` vs ```curl -s```. You may need to remove line breaks in the examples. You can also use the utility [jq](https://stedolan.github.io/jq/) to format and colorize output on the command line.
+```python
+import json
+import requests
+from pprint import pprint
 
-```bash
-curl -s -X POST -H "Content-Type: application/vnd.kafka.avro.v1+json" \
---data '{"value_schema": "{\"type\": \"record\",\"name\": \"brewery\",
-\"fields\":[{\"name\": \"sensor\", \"type\":\"string\"},{\"name\": \"temp\", \"type\": \"int\"}]}",
-"records": [{"value": {"sensor": "MashTun1", "temp":28}},{"value": {"sensor": "MashTun2", "temp":27}}]}' \
-https://api.3b4ff5ad.vip.eventador.io/topics/<username>_brewery
+username = "myusername" # change me to value in console->pipeline->connections
+endpoint = "xxxxxx" # change me to value in console->pipeline->connections
+schema = "brewery"  # change me to the pipeline name    
+namespace = "{}_{}".format(username, schema)
+uri = "https://schema-registry.{}.vip.eventador.io/subjects/{}-value/versions".format(endpoint, namespace)
+
+payload = {}
+payload['schema'] = """
+  {"type": "record",
+   "name": "brewery2",
+   "fields": [
+      {"name": "sensor", "type": "string"},
+      {"name": "temp", "type": "int"}
+]}
+"""
+
+headers = {'Content-Type': 'application/vnd.schemaregistry.v1+json'}
+r = requests.post(uri,
+                  data=json.dumps(payload),
+                  headers=headers)
+
+pprint(r.json())
+```
+
+This code will return a schema ID value. This is used when sending data into the pipeline.
+
+
+# Sending data to Eventador Pipeline
+```python
+import json
+import requests
+
+username = "myusername" # change me to value in console->pipeline->connections
+endpoint = "xxxxxx" # change me to value in console->pipeline->connections
+schema = "brewery"  # change me to the pipeline name   
+namespace = "{}_{}".format(username, schema)
+schema_id = "52" # change to the value returned from the previous step
+uri = "https://api.{}.vip.eventador.io/topics/{}".format(endpoint, namespace)
+
+payload = {}
+
+# this is the ID for the schema to use, it was returned in the previous step
+payload['value_schema_id'] = "{}".format(schema_id)
+
+# this is the data being sent in
+payload['records'] = [
+  {"value": {"sensor": "MashTun1", "temp":99}},
+  {"value": {"sensor": "MashTun2", "temp":42}}
+]
+
+headers = {'Content-Type': 'application/vnd.kafka.avro.v1+json'}
+r = requests.post(uri,
+                  data=json.dumps(payload),
+                  headers=headers)
+print r.json()
+
 ```
 
 More information on the REST interface can be [found here](http://docs.confluent.io/3.0.0/kafka-rest/docs/api.html).
@@ -86,11 +141,11 @@ First we must register a consumer. This ensures Kafka understands state as data 
 ```bash
 curl -s -X POST -H "Content-Type: application/vnd.kafka.v1+json" \
 --data '{"format": "avro", "auto.offset.reset": "smallest"}' \
-https://api.xxxxx.vip.eventador.io/consumers/my_consumer
+https://api.xxxxxx.vip.eventador.io/consumers/my_consumer
 
 {
   "instance_id": "rest-consumer-1",
-   "base_uri": "https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1"
+   "base_uri": "https://api.xxxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1"
 }
 
 ```
@@ -99,7 +154,7 @@ Next consume the data using the URI that is returned when we create a consumer.
 
 ```bash
 curl -s -X GET -H "Accept: application/vnd.kafka.avro.v1+json" \
-https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/topics/<username>_brewery
+https://api.xxxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/topics/myusername_brewery
 [
   {
      "key": null,
@@ -125,11 +180,11 @@ A continuous view is a view of a SQL Stream. The stream is automatically built w
 To login to the database and query the sample view and create more continuous views:
 
 - Download the PipelineDB client [here](https://www.pipelinedb.com/download).
-- Connect to the database using psql with your username, database. The login information, and hostname is available in the Eventador Console at ```http://console.eventador.io/pipeline_detail/<pipeline_name>```.
-- The username is ```login name```, the database name is ```username_pipelinename```
+- Connect to the database using psql with your username, database. The login information, and hostname is available in the Eventador [Console](http://console.eventador.io/pipelines), select the pipeline then connections.
+- By connvention, the database username is your login username, and the database_name is username_pipelinename.
 
 ```bash
-psql -U <username> -h <hostname> -p 9000 <database name>
+psql -U <username> -h <hostname> -p 9000 <database_name>
 ```
 
 Query the sample view:
@@ -154,7 +209,7 @@ More information on continuous views is available in the [PipelineDB documentati
 
 ## Monitoring the pipeline
 
-You can monitor your pipeline via the Eventador Console. From the [pipelines](http://console.eventador.io/pipelines) click on the pipeline to monitor. The statistics (default) tab shows some metrics about the pipeline.
+You can monitor your pipeline via the Eventador [Console](http://console.eventador.io/pipelines). Click on the pipeline to monitor. The statistics (default) tab shows some metrics about the pipeline.
 
 ## Software Versions
 - Kafka v0.10
