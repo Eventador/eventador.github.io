@@ -11,11 +11,11 @@ Eventador.io is currently in Beta. Please submit feedback to [hello@eventador.io
 
 Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.
 
-Eventador provides a producer and consumer interfaces. It also provides an Aggregation Interface in the form of PipelineDB/PostgreSQL. Other Interfaces will be added in the future.
+Eventador provides a producer and consumer interfaces. It also provides an SQL Interface in the form of PipelineDB/PostgreSQL. Other Interfaces will be added in the future.
 
 You produce data to Eventador using a REST interface, and consume data via the same REST interface. The REST interface also provides control over Kafka topics and schema. You can create multiple pipelines to form more complex event processing systems.
 
-You may also consume data via the Aggregation Interface. The Aggregation Interface is based on PipelineDB/PostgreSQL and allows you to build 'continuous views' to aggregate, query, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the Aggregation Interface.
+You may also consume data via the SQL Interface. The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build 'continuous views' to aggregate, query, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the SQL Interface.
 
 Getting started with Eventador takes just a few simple steps.
 
@@ -49,7 +49,7 @@ Endpoints are found by selecting [Pipelines](http://console.eventador.io/pipelin
 
 - Pipeline REST Interface: Produce
 - Pipeline Rest Interface: consume
-- Aggregation Interface (PipelineDB): Consume
+- SQL Interface (PipelineDB): Consume
 
 These endpoints will be needed to produce and consume data from your new pipeline.
 
@@ -73,7 +73,7 @@ More information on the REST interface can be [found here](http://docs.confluent
 
 ## Consuming Data from Eventador
 
-Data can be consumed from Eventador in two ways. It can be directly consumed from the Eventador Pipeline REST interface, or it can be consumed using the Aggregation Interface (PipelineDB).
+Data can be consumed from Eventador in two ways. It can be directly consumed from the Eventador Pipeline REST interface, or it can be consumed using the SQL Interface (PipelineDB).
 
 # Consuming from the Eventador Pipeline using the REST interface
 
@@ -116,11 +116,11 @@ https://api.xxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/t
 ]
 ```
 
-# Consuming from the Eventador Aggregation Interface
+# Consuming from the Eventador SQL Interface
 
-The Aggregation Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB SQL syntax and functions.
+The SQL Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, or anything else as defined by the PipelineDB SQL syntax and functions.
 
-A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created and has a sample continuous view created on it. You can create continuous views as needed. The continuous view is named ```ev_sample_view``` and is available in the users database. The database enforces SSL and causes the client to use SSL by default.
+A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created and has a sample continuous view created on it. You can create continuous views as needed. A sample view is created named ```ev_sample_view``` and is available in the users database. The database enforces SSL and causes the client to use SSL by default.
 
 To login to the database and query the sample view and create more continuous views:
 
