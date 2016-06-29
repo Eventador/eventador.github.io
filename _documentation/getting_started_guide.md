@@ -11,7 +11,7 @@ Eventador.io is currently in Beta. Please submit feedback to [hello@eventador.io
 
 Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.
 
-Eventador provides a producer and consumer interfaces. It also provides an SQL Interface in the form of PipelineDB/PostgreSQL. Other Interfaces will be added in the future.
+Eventador provides producer and consumer interfaces. It also provides an SQL Interface in the form of PipelineDB/PostgreSQL. Other Interfaces will be added in the future.
 
 You produce data to Eventador using a REST interface, and consume data via the same REST interface. The REST interface also provides control over Kafka topics and schema. You can create multiple pipelines to form more complex event processing systems.
 
