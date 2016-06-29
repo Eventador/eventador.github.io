@@ -60,7 +60,7 @@
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Getting Started Guide</h1>
-    <p class="post-meta"><time datetime="2016-06-29T15:33:32-05:00" itemprop="datePublished">Jun 29, 2016</time></p>
+    <p class="post-meta"><time datetime="2016-06-29T15:46:16-05:00" itemprop="datePublished">Jun 29, 2016</time></p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
@@ -199,40 +199,39 @@
 
 <p>Consuming data via the REST interface requires two steps. First registering a consumer, then consuming from the pipeline.</p>
 
-<h1 id="registering-a-consumer">Registering a consumer</h1>
+<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
 
-<p>First we must register a consumer. This ensures Kafka understands state as data is consumed.</p>
+<span class="n">username</span> <span class="o">=</span> <span class="s">"myusername"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
+<span class="n">endpoint</span> <span class="o">=</span> <span class="s">"xxxxxx"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># change me to the pipeline name   </span>
+<span class="n">topic</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">)</span>
+<span class="n">consumer_group</span> <span class="o">=</span> <span class="s">"my_group_of_application_servers"</span> <span class="c"># logical group of consumers sharing offsets</span>
+<span class="n">consumer_uri</span> <span class="o">=</span> <span class="s">"https://api.{}.vip.eventador.io/consumers/{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">consumer_group</span><span class="p">)</span>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>curl -s -X POST -H <span class="s2">"Content-Type: application/vnd.kafka.v1+json"</span> <span class="se">\</span>
---data <span class="s1">'{"format": "avro", "auto.offset.reset": "smallest"}'</span> <span class="se">\</span>
-https://api.xxxxxx.vip.eventador.io/consumers/my_consumer
+<span class="c"># register a new consumer (node)</span>
+<span class="n">register_consumer</span> <span class="o">=</span> <span class="p">{</span><span class="s">"format"</span><span class="p">:</span> <span class="s">"avro"</span><span class="p">,</span>
+                     <span class="s">"auto.offset.reset"</span><span class="p">:</span> <span class="s">"largest"</span> <span class="c"># start at most recent offset,</span>
+                                                    <span class="c"># can also use 'smallest',</span>
+                                                    <span class="c"># or omit entirely</span>
+                    <span class="p">}</span>
 
-<span class="o">{</span>
-  <span class="s2">"instance_id"</span>: <span class="s2">"rest-consumer-1"</span>,
-   <span class="s2">"base_uri"</span>: <span class="s2">"https://api.xxxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1"</span>
-<span class="o">}</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">consumer_uri</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">register_consumer</span><span class="p">),</span>
+        <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s">'Content-Type'</span><span class="p">:</span> <span class="s">'application/vnd.kafka.v1+json'</span><span class="p">})</span>
 
-</code></pre>
-</div>
+<span class="c"># this will contain our assigned endpoint to read messages from</span>
+<span class="n">base_uri</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s">'base_uri'</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"Using endpoint: {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_uri</span><span class="p">))</span>
 
-<p>Next consume the data using the URI that is returned when we create a consumer.</p>
-
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>curl -s -X GET -H <span class="s2">"Accept: application/vnd.kafka.avro.v1+json"</span> <span class="se">\</span>
-https://api.xxxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/topics/myusername_brewery
-<span class="o">[</span>
-  <span class="o">{</span>
-     <span class="s2">"key"</span>: null,
-     <span class="s2">"value"</span>: <span class="o">{</span><span class="s2">"sensor"</span>: <span class="s2">"MashTun1"</span>, <span class="s2">"temp"</span>: 28<span class="o">}</span>,
-     <span class="s2">"partition"</span>: 0,
-     <span class="s2">"offset"</span>: 0
-   <span class="o">}</span>,
-   <span class="o">{</span>
-     <span class="s2">"key"</span>: null,
-     <span class="s2">"value"</span>: <span class="o">{</span><span class="s2">"sensor"</span>: <span class="s2">"MashTun2"</span>, <span class="s2">"temp"</span>: 27<span class="o">}</span>,
-     <span class="s2">"partition"</span>: 0,
-     <span class="s2">"offset"</span>: 1
-   <span class="o">}</span>
-<span class="o">]</span>
+<span class="c"># loop while polling for new messages</span>
+<span class="n">topic_uri</span> <span class="o">=</span> <span class="s">"{}/topics/{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_uri</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
+<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic_uri</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s">'Accept'</span><span class="p">:</span> <span class="s">'application/vnd.kafka.avro.v1+json'</span><span class="p">})</span>
+    <span class="k">print</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </code></pre>
 </div>
 

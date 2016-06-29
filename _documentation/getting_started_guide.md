@@ -133,41 +133,40 @@ Data can be consumed from Eventador in two ways. It can be directly consumed fro
 
 Consuming data via the REST interface requires two steps. First registering a consumer, then consuming from the pipeline.
 
-# Registering a consumer
+```python
+import json
+import requests
+import time
+from pprint import pprint
 
-First we must register a consumer. This ensures Kafka understands state as data is consumed.
+username = "myusername" # change me to value in console->pipeline->connections
+endpoint = "xxxxxx" # change me to value in console->pipeline->connections
+pipeline = "brewery"  # change me to the pipeline name   
+topic = "{}_{}".format(username, pipeline)
+consumer_group = "my_group_of_application_servers" # logical group of consumers sharing offsets
+consumer_uri = "https://api.{}.vip.eventador.io/consumers/{}".format(endpoint, consumer_group)
 
-```bash
-curl -s -X POST -H "Content-Type: application/vnd.kafka.v1+json" \
---data '{"format": "avro", "auto.offset.reset": "smallest"}' \
-https://api.xxxxxx.vip.eventador.io/consumers/my_consumer
+# register a new consumer (node)
+register_consumer = {"format": "avro",
+                     "auto.offset.reset": "largest" # start at most recent offset,
+                                                    # can also use 'smallest',
+                                                    # or omit entirely
+                    }
 
-{
-  "instance_id": "rest-consumer-1",
-   "base_uri": "https://api.xxxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1"
-}
+r = requests.post(consumer_uri, data=json.dumps(register_consumer),
+        headers={'Content-Type': 'application/vnd.kafka.v1+json'})
 
-```
+# this will contain our assigned endpoint to read messages from
+base_uri = r.json()['base_uri']
+print("Using endpoint: {}".format(base_uri))
 
-Next consume the data using the URI that is returned when we create a consumer.
-
-```bash
-curl -s -X GET -H "Accept: application/vnd.kafka.avro.v1+json" \
-https://api.xxxxxx.eventador.io/consumers/my_consumer/instances/rest-consumer-1/topics/myusername_brewery
-[
-  {
-     "key": null,
-     "value": {"sensor": "MashTun1", "temp": 28},
-     "partition": 0,
-     "offset": 0
-   },
-   {
-     "key": null,
-     "value": {"sensor": "MashTun2", "temp": 27},
-     "partition": 0,
-     "offset": 1
-   }
-]
+# loop while polling for new messages
+topic_uri = "{}/topics/{}".format(base_uri, topic)
+while True:
+    r = requests.get(topic_uri,
+            headers={'Accept': 'application/vnd.kafka.avro.v1+json'})
+    print r.json()
+    time.sleep(1)
 ```
 
 # Consuming from the Eventador SQL Interface
