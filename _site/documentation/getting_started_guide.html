@@ -10,8 +10,8 @@
   <meta name="description" content="Beta">
 
   <link rel="stylesheet" href="/css/main.css">
-  <link rel="canonical" href="http://yourdomain.com/documentation/getting_started_guide.html">
-  <link rel="alternate" type="application/rss+xml" title="Eventador" href="http://yourdomain.com/feed.xml">
+  <link rel="canonical" href="http://eventador.io/documentation/getting_started_guide.html">
+  <link rel="alternate" type="application/rss+xml" title="Eventador" href="http://eventador.io/feed.xml">
 </head>
 
 
@@ -60,7 +60,7 @@
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Getting Started Guide</h1>
-    <p class="post-meta"><time datetime="2016-08-11T14:08:48-07:00" itemprop="datePublished">Aug 11, 2016</time></p>
+    <p class="post-meta"><time datetime="2016-08-12T09:42:00-07:00" itemprop="datePublished">Aug 12, 2016</time></p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
@@ -114,39 +114,39 @@
 
 <h1 id="producing-data-to-eventador">Producing Data to Eventador</h1>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>import json
-from kafka import KafkaProducer
+<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">kafka</span> <span class="kn">import</span> <span class="n">KafkaProducer</span>
 
-EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
-EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments tab in UI
+<span class="n">EVENTADOR_KAFKA_TOPIC</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># any topic name, will autocreate if needed</span>
+<span class="n">EVENTADOR_BOOTSTRAP_SERVERS</span> <span class="o">=</span> <span class="s">"my bootstrap servers"</span>  <span class="c"># value from deployments tab in UI</span>
 
-payload = {}
+<span class="n">payload</span> <span class="o">=</span> <span class="p">{}</span>
 
-# this is the data you want to send in
-payload['records'] = [
-  {"value": {"sensor": "MashTun1", "temp": 99}},
-  {"value": {"sensor": "MashTun2", "temp": 42}}
-]
+<span class="c"># this is the data you want to send in</span>
+<span class="n">payload</span><span class="p">[</span><span class="s">'records'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="p">{</span><span class="s">"value"</span><span class="p">:</span> <span class="p">{</span><span class="s">"sensor"</span><span class="p">:</span> <span class="s">"MashTun1"</span><span class="p">,</span> <span class="s">"temp"</span><span class="p">:</span> <span class="mi">99</span><span class="p">}},</span>
+  <span class="p">{</span><span class="s">"value"</span><span class="p">:</span> <span class="p">{</span><span class="s">"sensor"</span><span class="p">:</span> <span class="s">"MashTun2"</span><span class="p">,</span> <span class="s">"temp"</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}</span>
+<span class="p">]</span>
 
-producer = KafkaProducer(value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-                         bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
-producer.send(EVENTADOR_KAFKA_TOPIC, json.dumps(payload))
+<span class="n">producer</span> <span class="o">=</span> <span class="n">KafkaProducer</span><span class="p">(</span><span class="n">value_serializer</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">),</span>
+                         <span class="n">bootstrap_servers</span><span class="o">=</span><span class="n">EVENTADOR_BOOTSTRAP_SERVERS</span><span class="p">)</span>
+<span class="n">producer</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">EVENTADOR_KAFKA_TOPIC</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
 </code></pre>
 </div>
 
 <h1 id="consuming-data-from-eventador">Consuming Data from Eventador</h1>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>import json
-from pprint import pprint
-from kafka import KafkaConsumer
+<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="kn">from</span> <span class="nn">kafka</span> <span class="kn">import</span> <span class="n">KafkaConsumer</span>
 
-EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
-EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments tab in UI
+<span class="n">EVENTADOR_KAFKA_TOPIC</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># any topic name, will autocreate if needed</span>
+<span class="n">EVENTADOR_BOOTSTRAP_SERVERS</span> <span class="o">=</span> <span class="s">"my bootstrap servers"</span>  <span class="c"># value from deployments tab in UI</span>
 
-consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC, bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
+<span class="n">consumer</span> <span class="o">=</span> <span class="n">KafkaConsumer</span><span class="p">(</span><span class="n">EVENTADOR_KAFKA_TOPIC</span><span class="p">,</span> <span class="n">bootstrap_servers</span><span class="o">=</span><span class="n">EVENTADOR_BOOTSTRAP_SERVERS</span><span class="p">)</span>
 
-for msg in consumer:
-    print msg
+<span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">consumer</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">msg</span>
 </code></pre>
 </div>
 
@@ -260,8 +260,7 @@ for msg in consumer:
       </div>
 
       <div class="footer-col footer-col-3">
-        <p>Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.
-</p>
+        <p>Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.</p>
       </div>
     </div>
 

@@ -8,15 +8,14 @@
 # Site settings
 title: Eventador
 email: hello@eventador.io
-description: > # this means to ignore newlines until "baseurl:"
-  Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.
+description: "Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service."
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://yourdomain.com" # the base hostname & protocol for your site
+url: "http://eventador.io" # the base hostname & protocol for your site
 twitter_username: eventadorlabs
 github_username:  eventador
 
 # Build settings
-markdown: Kramdown
+markdown: kramdown
 highlighter: rouge
 
 collections:
