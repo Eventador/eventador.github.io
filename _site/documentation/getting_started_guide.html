@@ -60,35 +60,33 @@
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Getting Started Guide</h1>
-    <p class="post-meta"><time datetime="2016-06-29T15:46:16-05:00" itemprop="datePublished">Jun 29, 2016</time></p>
+    <p class="post-meta"><time datetime="2016-08-11T14:08:48-07:00" itemprop="datePublished">Aug 11, 2016</time></p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <h2 id="beta">Beta</h2>
+    <h1 id="beta">Beta</h1>
 
 <p>Eventador.io is currently in Beta. Please submit feedback to <a href="&#109;&#097;&#105;&#108;&#116;&#111;:&#104;&#101;&#108;&#108;&#111;&#064;&#101;&#118;&#101;&#110;&#116;&#097;&#100;&#111;&#114;&#046;&#105;&#111;">&#104;&#101;&#108;&#108;&#111;&#064;&#101;&#118;&#101;&#110;&#116;&#097;&#100;&#111;&#114;&#046;&#105;&#111;</a></p>
 
-<h2 id="getting-started">Getting Started</h2>
+<h1 id="getting-started">Getting Started</h1>
 
 <p>Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.</p>
 
-<p>Eventador provides a producer and consumer interfaces. It also provides an SQL Interface in the form of PipelineDB/PostgreSQL. Other Interfaces will be added in the future.</p>
+<p>Eventador provides Kafka producer and consumer endpoints that speak native Kafka wire protocol and work with a Kafka native drivers.</p>
 
-<p>You produce data to Eventador using a REST interface, and consume data via the same REST interface. The REST interface also provides control over Kafka topics and schema. You can create multiple pipelines to form more complex event processing systems.</p>
-
-<p>You may also consume data via the SQL Interface. The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build ‘continuous views’ to aggregate, time-slice, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the SQL Interface.</p>
+<p>Eventador also has extended interfaces to make producing and consuming data more powerful.</p>
 
 <p>Getting started with Eventador takes just a few simple steps.</p>
 
-<h2 id="creating-an-account">Creating an account.</h2>
+<h1 id="creating-an-account">Creating an account.</h1>
 
 <p>To get started you must have an account. <a href="http://console.eventador.io/register">Register here</a>.</p>
 
-<h2 id="building-pipelines">Building Pipelines</h2>
+<h1 id="deployments">Deployments</h1>
 
-<p>Pipelines are created on a deployment. A deployment must first be created for the pipeline. A deployment is a group of AWS compute resources. Multiple pipelines may exist on a single deployment. Deployments are scaled independently of each other. When a pipeline is created, a Kafka topic is created for that pipeline along with all the required plumbing and components.</p>
+<p>A deployment is a group of compute resources assigned to process your data pipeline. A deployment contains a Kafka cluster, zookeeper nodes, has implicit security controls, etc. It’s a core construct everything is built on in Eventador. You must have at least one deployment to use the service.</p>
 
-<p>The <a href="https://console.eventador.io">Eventador Console</a> allows for creation of a deployments and pipelines.</p>
+<p>The <a href="https://console.eventador.io">Eventador Console</a> allows for creation of a deployments.</p>
 
 <h1 id="creating-a-deployment">Creating a deployment:</h1>
 <ul>
@@ -96,146 +94,71 @@
   <li>Select the ‘Create Deployment’ button.</li>
   <li>Name the deployment, and select the compute resource style appropriate for the workload being run.</li>
   <li>Click create. A deployment may take a bit of time to provision. A deployment can not be used until it’s status is ‘Active’ in the <a href="http://console.eventador.io/deployments">Deployments</a> tab.</li>
-  <li>An ACL must be created to allow the producers to connect. On the <a href="http://console.eventador.io/deployments">Deployments</a> tab, select the deployment-&gt;ACLS-&gt;add ACL. Add a value in CIDR notation for the IP to whitelist.</li>
+  <li>An ACL must be created to allow the producers and consumers to connect. On the <a href="http://console.eventador.io/deployments">Deployments</a> tab, select the deployment-&gt;ACLS-&gt;add ACL. Add a value in CIDR notation for the IP to whitelist.</li>
 </ul>
 
-<p>A pipeline can now be created on the deployment.</p>
-
-<h1 id="creating-a-pipeline">Creating a pipeline:</h1>
-<ul>
-  <li>Click the <a href="http://console.eventador.io/pipelines">Pipelines</a> tab.</li>
-  <li>Select the ‘Create Pipeline’ button.</li>
-  <li>Name the pipeline, give it a description, select the Deployment that was just created, and give a user/password for the data store.</li>
-  <li>Click create. A pipeline is now created and can be seen under the <a href="http://console.eventador.io/pipelines">Pipelines</a> tab.</li>
-</ul>
-
-<h1 id="understanding-endpoints">Understanding Endpoints</h1>
-<p>Endpoints are found by selecting <a href="http://console.eventador.io/pipelines">Pipelines</a> tab, then the pipeline, then connections. There are connection strings for:</p>
+<h2 id="understanding-endpoints">Understanding Endpoints</h2>
+<p>Endpoints are found by selecting <a href="http://console.eventador.io/deployments">Deployments</a> tab, then connections. There are connection strings for:</p>
 
 <ul>
-  <li>Pipeline REST Interface: produce</li>
-  <li>Pipeline Rest Interface: consume</li>
-  <li>SQL Interface (PipelineDB): consume</li>
+  <li>Native Kafka Driver: produce</li>
+  <li>Native Kafka Driver: consume</li>
+  <li>Additional Interfaces: aka: SQL Interface (PipelineDB): Consume/Produce</li>
 </ul>
 
-<p>These endpoints will be needed to produce and consume data from your new pipeline.</p>
+<p>These endpoints will be needed to produce to and consume from your new deployment.</p>
 
-<h2 id="publishing-data-to-the-eventador-pipeline">Publishing Data to the Eventador Pipeline</h2>
+<h1 id="topics">Topics</h1>
 
-<p>Publishing data to the Eventador Pipeline is done via the REST endpoint. It’s important to note that a schema must be defined for the Pipeline before data can be sent to it. The examples below assume python is installed on your system.</p>
+<p>Eventador allows for full control over Kafka topics. You can create and use topics as you would with any Kafka installation. Currently you manage topics via the native driver interface.</p>
 
-<h1 id="creating-a-schema">Creating a schema</h1>
+<h1 id="producing-data-to-eventador">Producing Data to Eventador</h1>
 
-<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<div class="highlighter-rouge"><pre class="highlight"><code>import json
+from kafka import KafkaProducer
 
-<span class="n">username</span> <span class="o">=</span> <span class="s">"myusername"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
-<span class="n">endpoint</span> <span class="o">=</span> <span class="s">"xxxxxx"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
-<span class="n">pipeline</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># change me to the pipeline name    </span>
-<span class="n">topic</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">)</span>
-<span class="n">uri</span> <span class="o">=</span> <span class="s">"https://schema-registry.{}.vip.eventador.io/subjects/{}-value/versions"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
+EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
+EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments tab in UI
 
-<span class="c"># schema is two values: sensor (string), temp (int)</span>
-<span class="n">payload</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="n">payload</span><span class="p">[</span><span class="s">'schema'</span><span class="p">]</span> <span class="o">=</span> <span class="s">"""
-  {"type": "record",
-   "name": "mybreweryschema",
-   "fields": [
-      {"name": "sensor", "type": "string"},
-      {"name": "temp", "type": "int"}
-]}
-"""</span>
+payload = {}
 
-<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s">'Content-Type'</span><span class="p">:</span> <span class="s">'application/vnd.schemaregistry.v1+json'</span><span class="p">}</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span>
-                  <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">),</span>
-                  <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+# this is the data you want to send in
+payload['records'] = [
+  {"value": {"sensor": "MashTun1", "temp": 99}},
+  {"value": {"sensor": "MashTun2", "temp": 42}}
+]
 
-<span class="n">pprint</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+producer = KafkaProducer(value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                         bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
+producer.send(EVENTADOR_KAFKA_TOPIC, json.dumps(payload))
 </code></pre>
 </div>
 
-<p>This code will return a schema ID. This value is used when sending data into the pipeline.</p>
+<h1 id="consuming-data-from-eventador">Consuming Data from Eventador</h1>
 
-<h1 id="sending-data-to-eventador-pipeline">Sending data to Eventador Pipeline</h1>
-<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">requests</span>
+<div class="highlighter-rouge"><pre class="highlight"><code>import json
+from pprint import pprint
+from kafka import KafkaConsumer
 
-<span class="n">username</span> <span class="o">=</span> <span class="s">"myusername"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
-<span class="n">endpoint</span> <span class="o">=</span> <span class="s">"xxxxxx"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
-<span class="n">pipeline</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># change me to the pipeline name   </span>
-<span class="n">topic</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">)</span>
-<span class="n">schema_id</span> <span class="o">=</span> <span class="s">"52"</span> <span class="c"># change to the value returned from the previous step</span>
-<span class="n">uri</span> <span class="o">=</span> <span class="s">"https://api.{}.vip.eventador.io/topics/{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
+EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
+EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments tab in UI
 
-<span class="n">payload</span> <span class="o">=</span> <span class="p">{}</span>
+consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC, bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
 
-<span class="c"># this is the ID for the schema to use, it was returned in the previous step</span>
-<span class="n">payload</span><span class="p">[</span><span class="s">'value_schema_id'</span><span class="p">]</span> <span class="o">=</span> <span class="s">"{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">schema_id</span><span class="p">)</span>
-
-<span class="c"># this is the data you want to send in</span>
-<span class="n">payload</span><span class="p">[</span><span class="s">'records'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-  <span class="p">{</span><span class="s">"value"</span><span class="p">:</span> <span class="p">{</span><span class="s">"sensor"</span><span class="p">:</span> <span class="s">"MashTun1"</span><span class="p">,</span> <span class="s">"temp"</span><span class="p">:</span><span class="mi">99</span><span class="p">}},</span>
-  <span class="p">{</span><span class="s">"value"</span><span class="p">:</span> <span class="p">{</span><span class="s">"sensor"</span><span class="p">:</span> <span class="s">"MashTun2"</span><span class="p">,</span> <span class="s">"temp"</span><span class="p">:</span><span class="mi">42</span><span class="p">}}</span>
-<span class="p">]</span>
-
-<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s">'Content-Type'</span><span class="p">:</span> <span class="s">'application/vnd.kafka.avro.v1+json'</span><span class="p">}</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span>
-                  <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">),</span>
-                  <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-
+for msg in consumer:
+    print msg
 </code></pre>
 </div>
 
-<p>More information on the REST interface can be <a href="http://docs.confluent.io/3.0.0/kafka-rest/docs/api.html">found here</a>.</p>
+<h1 id="extended-interfaces">Extended Interfaces</h1>
 
-<h2 id="consuming-data-from-eventador">Consuming Data from Eventador</h2>
+<p>Eventador provides the ability to have extended interfaces. These are additional components provisioned in your deployment that allow for additional functionality and usefulness when building real time data applications.</p>
 
-<p>Data can be consumed from Eventador in two ways. It can be directly consumed from the Eventador Pipeline REST interface, or it can be consumed using the SQL Interface (PipelineDB).</p>
+<h2 id="sql-interface">SQL Interface</h2>
 
-<h1 id="consuming-from-the-eventador-pipeline-using-the-rest-interface">Consuming from the Eventador Pipeline using the REST interface</h1>
+<p>The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build ‘continuous views’ to aggregate, time-slice, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the SQL Interface.</p>
 
-<p>Consuming data via the REST interface requires two steps. First registering a consumer, then consuming from the pipeline.</p>
-
-<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
-
-<span class="n">username</span> <span class="o">=</span> <span class="s">"myusername"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
-<span class="n">endpoint</span> <span class="o">=</span> <span class="s">"xxxxxx"</span> <span class="c"># change me to value in console-&gt;pipeline-&gt;connections</span>
-<span class="n">pipeline</span> <span class="o">=</span> <span class="s">"brewery"</span>  <span class="c"># change me to the pipeline name   </span>
-<span class="n">topic</span> <span class="o">=</span> <span class="s">"{}_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">)</span>
-<span class="n">consumer_group</span> <span class="o">=</span> <span class="s">"my_group_of_application_servers"</span> <span class="c"># logical group of consumers sharing offsets</span>
-<span class="n">consumer_uri</span> <span class="o">=</span> <span class="s">"https://api.{}.vip.eventador.io/consumers/{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">consumer_group</span><span class="p">)</span>
-
-<span class="c"># register a new consumer (node)</span>
-<span class="n">register_consumer</span> <span class="o">=</span> <span class="p">{</span><span class="s">"format"</span><span class="p">:</span> <span class="s">"avro"</span><span class="p">,</span>
-                     <span class="s">"auto.offset.reset"</span><span class="p">:</span> <span class="s">"largest"</span> <span class="c"># start at most recent offset,</span>
-                                                    <span class="c"># can also use 'smallest',</span>
-                                                    <span class="c"># or omit entirely</span>
-                    <span class="p">}</span>
-
-<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">consumer_uri</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">register_consumer</span><span class="p">),</span>
-        <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s">'Content-Type'</span><span class="p">:</span> <span class="s">'application/vnd.kafka.v1+json'</span><span class="p">})</span>
-
-<span class="c"># this will contain our assigned endpoint to read messages from</span>
-<span class="n">base_uri</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s">'base_uri'</span><span class="p">]</span>
-<span class="k">print</span><span class="p">(</span><span class="s">"Using endpoint: {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_uri</span><span class="p">))</span>
-
-<span class="c"># loop while polling for new messages</span>
-<span class="n">topic_uri</span> <span class="o">=</span> <span class="s">"{}/topics/{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_uri</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
-<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic_uri</span><span class="p">,</span>
-            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s">'Accept'</span><span class="p">:</span> <span class="s">'application/vnd.kafka.avro.v1+json'</span><span class="p">})</span>
-    <span class="k">print</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<h1 id="consuming-from-the-eventador-sql-interface">Consuming from the Eventador SQL Interface</h1>
+<h2 id="consuming-from-the-eventador-sql-interface">Consuming from the Eventador SQL Interface</h2>
 
 <p>The SQL Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, advanced analytics, or anything else as defined by the PipelineDB SQL syntax and functions.</p>
 
@@ -266,8 +189,8 @@
 
 <div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="c1">-- average temperature of sensors over the last 5 minutes by sensor name
 </span><span class="k">CREATE</span> <span class="n">CONTINUOUS</span> <span class="k">VIEW</span> <span class="n">brewery_sensor_temps</span> <span class="k">WITH</span> <span class="p">(</span><span class="n">max_age</span> <span class="o">=</span> <span class="s1">'5 minutes'</span><span class="p">)</span> <span class="k">AS</span>
-   <span class="k">SELECT</span> <span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'sensor'</span><span class="p">,</span> <span class="k">AVG</span><span class="p">((</span><span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'temp'</span><span class="p">::</span><span class="n">text</span><span class="p">)::</span><span class="n">numeric</span><span class="p">)</span>
-   <span class="k">FROM</span> <span class="n">brewery_stream</span>
+<span class="k">SELECT</span> <span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'sensor'</span><span class="p">,</span> <span class="k">AVG</span><span class="p">((</span><span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'temp'</span><span class="p">::</span><span class="n">text</span><span class="p">)::</span><span class="n">numeric</span><span class="p">)</span>
+<span class="k">FROM</span> <span class="n">brewery_stream</span>
 <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">payload</span><span class="o">-&gt;&gt;</span><span class="s1">'sensor'</span><span class="p">;</span>
 </code></pre>
 </div>
@@ -292,8 +215,6 @@
 <h2 id="software-versions">Software Versions</h2>
 <ul>
   <li>Kafka v0.10</li>
-  <li>Confluent kafka-REST proxy v3.0.0</li>
-  <li>Confluent Schema Registry v3.0.0</li>
   <li>PipelineDB 0.9.3/PostgreSQL 9.5</li>
 </ul>
 

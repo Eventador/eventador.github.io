@@ -3,173 +3,97 @@ layout: post
 title: Getting Started Guide
 ---
 
-## Beta
+# Beta
 
 Eventador.io is currently in Beta. Please submit feedback to [hello@eventador.io](mailto:hello@eventador.io)
 
-## Getting Started
+# Getting Started
 
 Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.
 
-Eventador provides producer and consumer interfaces. It also provides an SQL Interface in the form of PipelineDB/PostgreSQL. Other Interfaces will be added in the future.
+Eventador provides Kafka producer and consumer endpoints that speak native Kafka wire protocol and work with a Kafka native drivers.
 
-You produce data to Eventador using a REST interface, and consume data via the same REST interface. The REST interface also provides control over Kafka topics and schema. You can create multiple pipelines to form more complex event processing systems.
-
-You may also consume data via the SQL Interface. The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build 'continuous views' to aggregate, time-slice, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the SQL Interface.
+Eventador also has extended interfaces to make producing and consuming data more powerful.
 
 Getting started with Eventador takes just a few simple steps.
 
-## Creating an account.
+# Creating an account.
 
 To get started you must have an account. [Register here](http://console.eventador.io/register).
 
-## Building Pipelines
+# Deployments
 
-Pipelines are created on a deployment. A deployment must first be created for the pipeline. A deployment is a group of AWS compute resources. Multiple pipelines may exist on a single deployment. Deployments are scaled independently of each other. When a pipeline is created, a Kafka topic is created for that pipeline along with all the required plumbing and components.
+A deployment is a group of compute resources assigned to process your data pipeline. A deployment contains a Kafka cluster, zookeeper nodes, has implicit security controls, etc. It's a core construct everything is built on in Eventador. You must have at least one deployment to use the service.
 
-The [Eventador Console](https://console.eventador.io) allows for creation of a deployments and pipelines.
+The [Eventador Console](https://console.eventador.io) allows for creation of a deployments.
 
 # Creating a deployment:
 - Click the [Deployment](http://console.eventador.io/deployments) tab.
 - Select the 'Create Deployment' button.
 - Name the deployment, and select the compute resource style appropriate for the workload being run.
 - Click create. A deployment may take a bit of time to provision. A deployment can not be used until it's status is 'Active' in the [Deployments](http://console.eventador.io/deployments) tab.
-- An ACL must be created to allow the producers to connect. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->ACLS->add ACL. Add a value in CIDR notation for the IP to whitelist.
+- An ACL must be created to allow the producers and consumers to connect. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->ACLS->add ACL. Add a value in CIDR notation for the IP to whitelist.
 
-A pipeline can now be created on the deployment.
+## Understanding Endpoints
+Endpoints are found by selecting [Deployments](http://console.eventador.io/deployments) tab, then connections. There are connection strings for:
 
-# Creating a pipeline:
-- Click the [Pipelines](http://console.eventador.io/pipelines) tab.
-- Select the 'Create Pipeline' button.
-- Name the pipeline, give it a description, select the Deployment that was just created, and give a user/password for the data store.
-- Click create. A pipeline is now created and can be seen under the [Pipelines](http://console.eventador.io/pipelines) tab.
+- Native Kafka Driver: produce
+- Native Kafka Driver: consume
+- Additional Interfaces: aka: SQL Interface (PipelineDB): Consume/Produce
 
-# Understanding Endpoints
-Endpoints are found by selecting [Pipelines](http://console.eventador.io/pipelines) tab, then the pipeline, then connections. There are connection strings for:
+These endpoints will be needed to produce to and consume from your new deployment.
 
-- Pipeline REST Interface: produce
-- Pipeline Rest Interface: consume
-- SQL Interface (PipelineDB): consume
+# Topics
 
-These endpoints will be needed to produce and consume data from your new pipeline.
+Eventador allows for full control over Kafka topics. You can create and use topics as you would with any Kafka installation. Currently you manage topics via the native driver interface.
 
-## Publishing Data to the Eventador Pipeline
+# Producing Data to Eventador
 
-Publishing data to the Eventador Pipeline is done via the REST endpoint. It's important to note that a schema must be defined for the Pipeline before data can be sent to it. The examples below assume python is installed on your system.
-
-# Creating a schema
-
-```python
-import json
-import requests
-from pprint import pprint
-
-username = "myusername" # change me to value in console->pipeline->connections
-endpoint = "xxxxxx" # change me to value in console->pipeline->connections
-pipeline = "brewery"  # change me to the pipeline name    
-topic = "{}_{}".format(username, pipeline)
-uri = "https://schema-registry.{}.vip.eventador.io/subjects/{}-value/versions".format(endpoint, topic)
-
-# schema is two values: sensor (string), temp (int)
-payload = {}
-payload['schema'] = """
-  {"type": "record",
-   "name": "mybreweryschema",
-   "fields": [
-      {"name": "sensor", "type": "string"},
-      {"name": "temp", "type": "int"}
-]}
-"""
-
-headers = {'Content-Type': 'application/vnd.schemaregistry.v1+json'}
-r = requests.post(uri,
-                  data=json.dumps(payload),
-                  headers=headers)
-
-pprint(r.json())
 ```
-
-This code will return a schema ID. This value is used when sending data into the pipeline.
-
-
-# Sending data to Eventador Pipeline
-```python
 import json
-import requests
+from kafka import KafkaProducer
 
-username = "myusername" # change me to value in console->pipeline->connections
-endpoint = "xxxxxx" # change me to value in console->pipeline->connections
-pipeline = "brewery"  # change me to the pipeline name   
-topic = "{}_{}".format(username, pipeline)
-schema_id = "52" # change to the value returned from the previous step
-uri = "https://api.{}.vip.eventador.io/topics/{}".format(endpoint, topic)
+EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
+EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments tab in UI
 
 payload = {}
-
-# this is the ID for the schema to use, it was returned in the previous step
-payload['value_schema_id'] = "{}".format(schema_id)
 
 # this is the data you want to send in
 payload['records'] = [
-  {"value": {"sensor": "MashTun1", "temp":99}},
-  {"value": {"sensor": "MashTun2", "temp":42}}
+  {"value": {"sensor": "MashTun1", "temp": 99}},
+  {"value": {"sensor": "MashTun2", "temp": 42}}
 ]
 
-headers = {'Content-Type': 'application/vnd.kafka.avro.v1+json'}
-r = requests.post(uri,
-                  data=json.dumps(payload),
-                  headers=headers)
-print r.json()
-
+producer = KafkaProducer(value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                         bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
+producer.send(EVENTADOR_KAFKA_TOPIC, json.dumps(payload))
 ```
 
-More information on the REST interface can be [found here](http://docs.confluent.io/3.0.0/kafka-rest/docs/api.html).
+# Consuming Data from Eventador
 
-## Consuming Data from Eventador
-
-Data can be consumed from Eventador in two ways. It can be directly consumed from the Eventador Pipeline REST interface, or it can be consumed using the SQL Interface (PipelineDB).
-
-# Consuming from the Eventador Pipeline using the REST interface
-
-Consuming data via the REST interface requires two steps. First registering a consumer, then consuming from the pipeline.
-
-```python
+```
 import json
-import requests
-import time
 from pprint import pprint
+from kafka import KafkaConsumer
 
-username = "myusername" # change me to value in console->pipeline->connections
-endpoint = "xxxxxx" # change me to value in console->pipeline->connections
-pipeline = "brewery"  # change me to the pipeline name   
-topic = "{}_{}".format(username, pipeline)
-consumer_group = "my_group_of_application_servers" # logical group of consumers sharing offsets
-consumer_uri = "https://api.{}.vip.eventador.io/consumers/{}".format(endpoint, consumer_group)
+EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
+EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments tab in UI
 
-# register a new consumer (node)
-register_consumer = {"format": "avro",
-                     "auto.offset.reset": "largest" # start at most recent offset,
-                                                    # can also use 'smallest',
-                                                    # or omit entirely
-                    }
+consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC, bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
 
-r = requests.post(consumer_uri, data=json.dumps(register_consumer),
-        headers={'Content-Type': 'application/vnd.kafka.v1+json'})
-
-# this will contain our assigned endpoint to read messages from
-base_uri = r.json()['base_uri']
-print("Using endpoint: {}".format(base_uri))
-
-# loop while polling for new messages
-topic_uri = "{}/topics/{}".format(base_uri, topic)
-while True:
-    r = requests.get(topic_uri,
-            headers={'Accept': 'application/vnd.kafka.avro.v1+json'})
-    print r.json()
-    time.sleep(1)
+for msg in consumer:
+    print msg
 ```
 
-# Consuming from the Eventador SQL Interface
+# Extended Interfaces
+
+Eventador provides the ability to have extended interfaces. These are additional components provisioned in your deployment that allow for additional functionality and usefulness when building real time data applications.
+
+## SQL Interface
+
+The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build 'continuous views' to aggregate, time-slice, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the SQL Interface.
+
+## Consuming from the Eventador SQL Interface
 
 The SQL Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, advanced analytics, or anything else as defined by the PipelineDB SQL syntax and functions.
 
@@ -223,6 +147,4 @@ You can monitor your pipeline via the Eventador [Console](http://console.eventad
 
 ## Software Versions
 - Kafka v0.10
-- Confluent kafka-REST proxy v3.0.0
-- Confluent Schema Registry v3.0.0
 - PipelineDB 0.9.3/PostgreSQL 9.5
