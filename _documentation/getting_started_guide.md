@@ -45,7 +45,7 @@ These endpoints will be needed to produce to and consume from your new deploymen
 
 # Topics
 
-Eventador allows for full control over Kafka topics. You can create and use topics as you would with any Kafka installation. You can manage topics via the native driver interface or use the control panel.
+Eventador allows for full control over Kafka topics. You can create and use topics as you would with any Kafka installation. Currently you manage topics via the native driver interface.
 
 # Producing Data to Eventador
 
