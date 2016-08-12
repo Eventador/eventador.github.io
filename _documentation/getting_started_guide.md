@@ -49,7 +49,7 @@ Eventador allows for full control over Kafka topics. You can create and use topi
 
 # Producing Data to Eventador
 
-```
+```python
 import json
 from kafka import KafkaProducer
 
@@ -71,7 +71,7 @@ producer.send(EVENTADOR_KAFKA_TOPIC, json.dumps(payload))
 
 # Consuming Data from Eventador
 
-```
+```python
 import json
 from pprint import pprint
 from kafka import KafkaConsumer
