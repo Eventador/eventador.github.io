@@ -27,7 +27,7 @@ A deployment is a group of compute resources assigned to process your data pipel
 
 The [Eventador Console](https://console.eventador.io) allows for creation of a deployments.
 
-# Creating a deployment:
+## Creating a deployment:
 - Click the [Deployment](http://console.eventador.io/deployments) tab.
 - Select the 'Create Deployment' button.
 - Name the deployment, and select the compute resource style appropriate for the workload being run.
@@ -47,43 +47,7 @@ These endpoints will be needed to produce to and consume from your new deploymen
 
 Eventador allows for full control over Kafka topics. You can create and use topics as you would with any Kafka installation. Currently you manage topics via the native driver interface.
 
-# Producing Data to Eventador
 
-```python
-import json
-from kafka import KafkaProducer
-
-EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
-EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments tab in UI
-
-payload = {}
-
-# this is the data you want to send in
-payload['records'] = [
-  {"value": {"sensor": "MashTun1", "temp": 99}},
-  {"value": {"sensor": "MashTun2", "temp": 42}}
-]
-
-producer = KafkaProducer(value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-                         bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
-producer.send(EVENTADOR_KAFKA_TOPIC, json.dumps(payload))
-```
-
-# Consuming Data from Eventador
-
-```python
-import json
-from pprint import pprint
-from kafka import KafkaConsumer
-
-EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
-EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments tab in UI
-
-consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC, bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
-
-for msg in consumer:
-    print msg
-```
 
 # Extended Interfaces
 
