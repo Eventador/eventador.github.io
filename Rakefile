@@ -2,3 +2,4 @@
 
 require 'html-proofer'
 HTMLProofer.check_directory("./_site").run
+
