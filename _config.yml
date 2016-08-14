@@ -21,3 +21,5 @@ highlighter: rouge
 collections:
   documentation:
     output: true
+
+exclude: [vendor]
