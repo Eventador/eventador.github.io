@@ -83,6 +83,7 @@ consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC, bootstrap_servers=EVENTADOR_BOOT
 
 for msg in consumer:
     print msg
+
 ```
 
 # Extended Interfaces
