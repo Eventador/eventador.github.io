@@ -41,7 +41,7 @@ Endpoints are found by selecting [Deployments](http://console.eventador.io/deplo
 - Native Kafka Driver: consume
 - Additional Interfaces: aka: SQL Interface (PipelineDB): Consume/Produce
 
-These endpoints will be needed to produce to and consume from your new deployment.
+These endpoints will be needed to produce to and consume from your new deployment. Native drivers are available for many languages, [here](https://cwiki.apache.org/confluence/display/KAFKA/Clients) is a list.
 
 # Topics
 
