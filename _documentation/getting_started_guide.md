@@ -40,11 +40,12 @@ If you are looking to create additional deployment, the following steps can be p
 - An ACL must be created to allow the producers and consumers to connect. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->Security->Add ACL. Add a value in CIDR notation for the IP to whitelist.
 
 ## Understanding Endpoints
-Endpoints are found by selecting [Deployments](http://console.eventador.io/deployments) tab, then connections. There are connection strings for:
+Kafka endpoints are found by selecting [Deployments](http://console.eventador.io/deployments) tab, then connections. There are connection strings for:
 
-- Native Kafka Driver: produce
-- Native Kafka Driver: consume
-- Additional Interfaces: aka: SQL Interface (PipelineDB): Consume/Produce
+- Native Kafka PLAINTEXT: consume/produce
+- Native Kafka SSL: consume/produce
+
+Stack endpoints are found by selecting [Stacks](http://console.eventador.io/stacks) tab, then clicking a specific stack. Connection details for the stack will be listed in the connections section.
 
 These endpoints will be needed to produce to and consume from your new deployment. Native drivers are available for many languages, [here](https://cwiki.apache.org/confluence/display/KAFKA/Clients) is a list.
 
@@ -64,12 +65,16 @@ The certificate details (cert and key) will be available below in the SSL Certif
 
 # Producing Data to Eventador
 
+**Note: Examples below require the [kafka-python](https://github.com/dpkp/kafka-python) driver.**
+
+## Producing over PLAINTEXT
 ```python
+#!/usr/bin/env python
 import json
 from kafka import KafkaProducer
 
-EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
-EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments tab in UI
+EVENTADOR_KAFKA_TOPIC = "defaultsink"  # any topic name, will autocreate if needed
+EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments->connections in UI
 
 payload = {}
 
@@ -89,26 +94,43 @@ producer.send(EVENTADOR_KAFKA_TOPIC, payload)
 This will require generating a client certificate as noted above.
 
 ```python
-# Extending the above example
+#!/usr/bin/env python
+import json
+from kafka import KafkaProducer
+
+EVENTADOR_KAFKA_TOPIC = "defaultsink"  # any topic name, will autocreate if needed
+EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments->connections in UI
 EVENTADOR_SSL_CA_CERTIFICATE_FILE = "/path/to/deployment_ca.cer"
-EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE = "/path/to/deployment/client.cer"
-EVENTADOR_SSL_CLIENT_KEY_FILE = "/path/to/deployment/client.key"
+EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE = "/path/to/deployment_client.cer"
+EVENTADOR_SSL_CLIENT_KEY_FILE = "/path/to/deployment_client.key"
+
+payload = {}
+
+# this is the data you want to send in
+payload['records'] = [
+  {"value": {"sensor": "MashTun1", "temp": 99}},
+  {"value": {"sensor": "MashTun2", "temp": 42}}
+]
 
 producer = KafkaProducer(value_serializer=lambda v: json.dumps(v).encode('utf-8'),
                          bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS,
+                         security_protocol='SSL',
                          ssl_cafile=EVENTADOR_SSL_CA_CERTIFICATE_FILE,
                          ssl_certfile=EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE,
                          ssl_keyfile=EVENTADOR_SSL_CLIENT_KEY_FILE)
+producer.send(EVENTADOR_KAFKA_TOPIC, payload)
 ```
 
 # Consuming Data from Eventador
 
+## Consuming over PLAINTEXT
+
 ```python
-import json
+#!/usr/bin/env python
 from kafka import KafkaConsumer
 
-EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
-EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments tab in UI
+EVENTADOR_KAFKA_TOPIC = "defaultsink"  # any topic name, will autocreate if needed
+EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments->connections in UI
 
 consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC, bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
 
@@ -119,16 +141,23 @@ for msg in consumer:
 ## Consuming over SSL
 
 ```python
-# Extending the above example
+#!/usr/bin/env python
+from kafka import KafkaConsumer
+
+EVENTADOR_KAFKA_TOPIC = "defaultsink"  # any topic name, will autocreate if needed
+EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments->connections in UI
 EVENTADOR_SSL_CA_CERTIFICATE_FILE = "/path/to/deployment_ca.cer"
-EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE = "/path/to/deployment/client.cer"
-EVENTADOR_SSL_CLIENT_KEY_FILE = "/path/to/deployment/client.key"
+EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE = "/path/to/deployment_client.cer"
+EVENTADOR_SSL_CLIENT_KEY_FILE = "/path/to/deployment_client.key"
 
 consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC,
                          bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS,
+                         security_protocol='SSL',
                          ssl_cafile=EVENTADOR_SSL_CA_CERTIFICATE_FILE,
                          ssl_certfile=EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE,
                          ssl_keyfile=EVENTADOR_SSL_CLIENT_KEY_FILE)
+for msg in consumer:
+    print msg
 ```
 
 # Extended Interfaces - Stacks
@@ -148,7 +177,7 @@ A continuous view is a view of a SQL Stream. The stream is automatically built w
 To login to the database and query the sample view and create more continuous views:
 
 - Download the PipelineDB client [here](https://www.pipelinedb.com/download).
-- Connect to the database using psql with your username, database. The login information, and hostname is available in the Eventador [Console](http://console.eventador.io/stacks), select the stack to view the stack details complete with connection information.
+- Connect to the database using **psql** with your username, database. The login information, and hostname is available in the Eventador [Console](http://console.eventador.io/stacks), select the stack to view the stack details complete with connection information.
 
 ```bash
 psql -U <username> -h <hostname> -p 9000 <database_name>
