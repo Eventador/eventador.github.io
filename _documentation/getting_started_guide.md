@@ -13,7 +13,7 @@ Eventador is a high performance real-time data pipeline based on Apache Kafka. E
 
 Eventador provides Kafka producer and consumer endpoints that speak native Kafka wire protocol and work with a Kafka native drivers.
 
-Eventador also has extended interfaces to make producing and consuming data more powerful.
+Eventador also has extended interfaces, called Stacks, to make producing and consuming data more powerful.
 
 Getting started with Eventador takes just a few simple steps.
 
@@ -32,7 +32,7 @@ The [Eventador Console](https://console.eventador.io) allows for creation of a d
 - Select the 'Create Deployment' button.
 - Name the deployment, and select the compute resource style appropriate for the workload being run.
 - Click create. A deployment may take a bit of time to provision. A deployment can not be used until it's status is 'Active' in the [Deployments](http://console.eventador.io/deployments) tab.
-- An ACL must be created to allow the producers and consumers to connect. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->ACLS->add ACL. Add a value in CIDR notation for the IP to whitelist.
+- An ACL must be created to allow the producers and consumers to connect. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->Security->Add ACL. Add a value in CIDR notation for the IP to whitelist.
 
 ## Understanding Endpoints
 Endpoints are found by selecting [Deployments](http://console.eventador.io/deployments) tab, then connections. There are connection strings for:
@@ -46,6 +46,16 @@ These endpoints will be needed to produce to and consume from your new deploymen
 # Topics
 
 Eventador allows for full control over Kafka topics. You can create and use topics as you would with any Kafka installation. Currently you manage topics via the native driver interface.
+
+We create one for you to get started, called "defaultsink", which is automatically extended with a PipelineDB Stack.
+
+## SSL - [Optional]
+
+To connect to Kafka over SSL, you can create a client certificate to secure the connection between your app and your deployments Kafka endpoints. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->Security.  Fill in a Common Name to identify your client and click the Generate button.
+
+The certificate details (cert and key) will be available below in the SSL Certificates section upon the initial generation of the client certificate. Simply click the "Display key and certificate" link to expose the details. Copy and paste this cert/key data into respective files locally and distribute them as needed for use with a Kafka driver. The CA certificate unique to your deployment will be displayed in this section as well, and will also need to be saved locally.
+
+**Please note that these details cannot be retrieved again after leaving or reloading the page. If the certificates are lost, you must generate a replacement.**
 
 # Producing Data to Eventador
 
@@ -66,14 +76,30 @@ payload['records'] = [
 
 producer = KafkaProducer(value_serializer=lambda v: json.dumps(v).encode('utf-8'),
                          bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
-producer.send(EVENTADOR_KAFKA_TOPIC, json.dumps(payload))
+producer.send(EVENTADOR_KAFKA_TOPIC, payload)
+```
+
+## Producing over SSL
+
+This will require generating a client certificate as noted above.
+
+```python
+# Extending the above example
+EVENTADOR_SSL_CA_CERTIFICATE_FILE = "/path/to/deployment_ca.cer"
+EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE = "/path/to/deployment/client.cer"
+EVENTADOR_SSL_CLIENT_KEY_FILE = "/path/to/deployment/client.key"
+
+producer = KafkaProducer(value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                         bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS,
+                         ssl_cafile=EVENTADOR_SSL_CA_CERTIFICATE_FILE,
+                         ssl_certfile=EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE,
+                         ssl_keyfile=EVENTADOR_SSL_CLIENT_KEY_FILE)
 ```
 
 # Consuming Data from Eventador
 
 ```python
 import json
-from pprint import pprint
 from kafka import KafkaConsumer
 
 EVENTADOR_KAFKA_TOPIC = "brewery"  # any topic name, will autocreate if needed
@@ -83,10 +109,24 @@ consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC, bootstrap_servers=EVENTADOR_BOOT
 
 for msg in consumer:
     print msg
-
 ```
 
-# Extended Interfaces
+## Consuming over SSL
+
+```python
+# Extending the above example
+EVENTADOR_SSL_CA_CERTIFICATE_FILE = "/path/to/deployment_ca.cer"
+EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE = "/path/to/deployment/client.cer"
+EVENTADOR_SSL_CLIENT_KEY_FILE = "/path/to/deployment/client.key"
+
+consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC,
+                         bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS,
+                         ssl_cafile=EVENTADOR_SSL_CA_CERTIFICATE_FILE,
+                         ssl_certfile=EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE,
+                         ssl_keyfile=EVENTADOR_SSL_CLIENT_KEY_FILE)
+```
+
+# Extended Interfaces - Stacks
 
 Eventador provides the ability to have extended interfaces. These are additional components provisioned in your deployment that allow for additional functionality and usefulness when building real time data applications.
 
@@ -103,8 +143,7 @@ A continuous view is a view of a SQL Stream. The stream is automatically built w
 To login to the database and query the sample view and create more continuous views:
 
 - Download the PipelineDB client [here](https://www.pipelinedb.com/download).
-- Connect to the database using psql with your username, database. The login information, and hostname is available in the Eventador [Console](http://console.eventador.io/pipelines), select the pipeline then connections.
-- By convention, the database username is your login username, and the database_name is username_pipelinename.
+- Connect to the database using psql with your username, database. The login information, and hostname is available in the Eventador [Console](http://console.eventador.io/stacks), select the stack to view the stack details complete with connection information.
 
 ```bash
 psql -U <username> -h <hostname> -p 9000 <database_name>
@@ -117,7 +156,7 @@ Query the sample view:
 SELECT * FROM ev_sample_view LIMIT 10;
 ```
 
-Continuous views are created on a stream. Every pipeline has a default stream named ```<pipeline name>_stream``` created automatically, with a payload field with the data type JSON.
+Continuous views are created on a stream. Every default stack has a default stream named ```defaultsink_stream``` created automatically, with a payload field with the data type JSON.
 
 You can create a new continuous view:
 
@@ -125,7 +164,7 @@ You can create a new continuous view:
 -- average temperature of sensors over the last 5 minutes by sensor name
 CREATE CONTINUOUS VIEW brewery_sensor_temps WITH (max_age = '5 minutes') AS
 SELECT payload->>'sensor', AVG((payload->>'temp'::text)::numeric)
-FROM brewery_stream
+FROM defaultsink_stream
 GROUP BY payload->>'sensor';
 ```
 
@@ -136,7 +175,7 @@ or
 CREATE CONTINUOUS VIEW brewery_temps_by_hourofday AS
 SELECT date_part('hour', arrival_timestamp) as ts,
 avg((payload->>'temp'::text)::numeric)
-FROM brewery_stream
+FROM defaultsink_stream
 GROUP BY ts;
 ```
 
