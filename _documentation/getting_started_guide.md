@@ -28,6 +28,11 @@ A deployment is a group of compute resources assigned to process your data pipel
 The [Eventador Console](https://console.eventador.io) allows for creation of a deployments.
 
 ## Creating a deployment:
+
+If you do not have a deployment, the console will walk you through a series of steps, wizard style, to create and start using your first deployment.
+
+If you are looking to create additional deployment, the following steps can be performed:
+
 - Click the [Deployment](http://console.eventador.io/deployments) tab.
 - Select the 'Create Deployment' button.
 - Name the deployment, and select the compute resource style appropriate for the workload being run.
@@ -136,9 +141,9 @@ The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build 'con
 
 ## Consuming from the Eventador SQL Interface
 
-The SQL Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the pipeline. Views can be simple aggregations, time-windows, advanced analytics, or anything else as defined by the PipelineDB SQL syntax and functions.
+The SQL Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the stack. Views can be simple aggregations, time-windows, advanced analytics, or anything else as defined by the PipelineDB SQL syntax and functions.
 
-A continuous view is a view of a SQL Stream. The stream is automatically built when a pipeline is created. A sample continuous view is created named ```ev_sample_view```. You can create more continuous views as needed. The database enforces SSL and causes the client to use SSL by default.
+A continuous view is a view of a SQL Stream. The stream is automatically built when a stack is created. A sample continuous view is created named ```ev_sample_view```. You can create more continuous views as needed. The database enforces SSL and causes the client to use SSL by default.
 
 To login to the database and query the sample view and create more continuous views:
 
@@ -181,9 +186,9 @@ GROUP BY ts;
 
 More information on continuous views is available in the [PipelineDB documentation](http://docs.pipelinedb.com/continuous-views.html)
 
-## Monitoring the pipeline
+## Monitoring the deployment
 
-You can monitor your pipeline via the Eventador [Console](http://console.eventador.io/pipelines). Click on the pipeline to monitor. The statistics (default) tab shows some metrics about the pipeline.
+You can monitor your deployment via the Eventador [Console](http://console.eventador.io/). This will display a dashboard of statistics from the Kafka nodes within your deployment.
 
 ## Software Versions
 - Kafka v0.10
