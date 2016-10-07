@@ -93,6 +93,8 @@ psql -f /opt/eventador/examples/brewery_example.sql
  - Select the connections tab. Click on the notebook link, the notebook username/password is listed right below the link.
 - Once in the Eventador Notebook environment, Select File->Open and select the brewery_example.ipynb notebook, and follow the steps in the notebook.
 
+The details of the notebook [here](https://github.com/Eventador/examples/blob/master/notebooks/Brewery%2BExample.ipynb) are on Github.
+
 # Monitoring a Deployment
 
 You can monitor your Deployment via the Eventador [Console](http://console.eventador.io/). This will display a dashboard of statistics from the Kafka nodes within your deployment.
