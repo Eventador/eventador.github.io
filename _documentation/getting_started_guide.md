@@ -7,218 +7,96 @@ title: Getting Started Guide
 
 Eventador.io is currently in Beta. Please submit feedback to [hello@eventador.io](mailto:hello@eventador.io)
 
-# Getting Started
+# Overview
 
-Eventador is a high performance real-time data pipeline based on Apache Kafka. Eventador is deployed to Amazon AWS, and delivered as a service.
-
-Eventador provides Kafka producer and consumer endpoints that speak native Kafka wire protocol and work with a Kafka native drivers.
-
-Eventador also has extended interfaces, called Stacks, to make producing and consuming data more powerful.
+Eventador is a high performance real-time data pipeline platform based on Apache Kafka. Eventador makes it easy perform analysis and build applications using real time streaming data. Some areas that can benefit from real time data are sensor networks, IoT, click-stream analysis, fraud detection, or anything that requires real-time data. Eventador is deployed to Amazon AWS, and delivered as a service.
 
 Getting started with Eventador takes just a few simple steps.
 
-# Creating an account.
+# Concepts
 
-To get started you must have an account. [Register here](http://console.eventador.io/register).
+Eventador facilitates the creation of clusters of cloud servers called **Deployments**. Deployments are built on AWS in a VPC per customer.
 
-# Deployments
+Each deployment may have many logical stream namespaces as Kafka **Topics**. Endpoints are exposed in plaintext or SSL for producing and consuming data for each topic.
 
-A deployment is a group of compute resources assigned to process your data pipeline. A deployment contains a Kafka cluster, zookeeper nodes, has implicit security controls, etc. It's a core construct everything is built on in Eventador. You must have at least one deployment to use the service.
+**Stacks** are interfaces that make consuming or producing data from/to a topic easy. A stack operates on a Topic. Eventador currently is shipping with a default stack running PipelineDB. The PipelineDB stack automatically consumes from the 'defaultsink' topic into the database, allowing for continuous views to be created against the stream.
 
-The [Eventador Console](https://console.eventador.io) allows for creation of a deployments.
+Each Deployment has a Jupyter **Notebook** server attached to it with helper functions for all endpoints. This enables easy analysis, graphing, data manipulation and reporting.
 
-## Creating a deployment:
+The Deployment, Topic, and Stacks make a **Data Pipeline**.
 
-If you do not have a deployment, the console will walk you through a series of steps, wizard style, to create and start using your first deployment.
+# Complete Example
 
-If you are looking to create additional deployment, the following steps can be performed:
+For this example we will do some hypothetical brewery automation based on real time sensor data. Sensors on beer mash tuns gather the current temperature levels and produce it to the pipeline. The data is then aggregated in real-time in PipelineDB. This allows the brewer to monitor the temperature levels and ensure it's below a particular threshold for good beer. If it gets out of threshold an actuator can reduce or increase the temperature.
+
+The complete sample set can be found in our examples repo.
+
+## Prequisites
+
+- Docker
+
+## Step 1: Create an Account
+
+If you don't have one already, [create](http://console.eventador.io/register) an account.
+
+## Step 2: Create a Deployment
+
+You must have at least one deployment.
 
 - Click the [Deployment](http://console.eventador.io/deployments) tab.
 - Select the 'Create Deployment' button.
 - Name the deployment, and select the compute resource style appropriate for the workload being run.
 - Click create. A deployment may take a bit of time to provision. A deployment can not be used until it's status is 'Active' in the [Deployments](http://console.eventador.io/deployments) tab.
-- An ACL must be created to allow the producers and consumers to connect. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->Security->Add ACL. Add a value in CIDR notation for the IP to whitelist.
+- An ACL must be created to allow the producers and consumers to connect. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->Security->Add ACL. Add a value in CIDR notation for the IP to whitelist. You can use ```curl ifconfig.co``` to find your IP.
 
-## Understanding Endpoints
-Kafka endpoints are found by selecting [Deployments](http://console.eventador.io/deployments) tab, then connections. There are connection strings for:
+## Step 3: Send some data
 
-- Native Kafka PLAINTEXT: consume/produce
-- Native Kafka SSL: consume/produce
+Producing data to Eventador is done by sending some data to a Deployment for a particular Topic. In this case, sensors on mash tuns.
 
-Stack endpoints are found by selecting [Stacks](http://console.eventador.io/stacks) tab, then clicking a specific stack. Connection details for the stack will be listed in the connections section.
+- Click the [Deployment](http://console.eventador.io/deployments) tab.
+- Select your Deployment
+- Select the connections tab.
+- Copy/Paste the Kafka Connections.Plain Text field into the example below, and run it on the command line. This will launch a Docker container in the background that's sending temperature data on periodic intervals.
 
-These endpoints will be needed to produce to and consume from your new deployment. Native drivers are available for many languages, [here](https://cwiki.apache.org/confluence/display/KAFKA/Clients) is a list.
-
-# Topics
-
-Eventador allows for full control over Kafka topics. You can create and use topics as you would with any Kafka installation. Currently you manage topics via the native driver interface.
-
-We create one for you to get started, called "defaultsink", which is automatically extended with a PipelineDB Stack.
-
-## SSL - [Optional]
-
-To connect to Kafka over SSL, you can create a client certificate to secure the connection between your app and your deployments Kafka endpoints. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->Security.  Fill in a Common Name to identify your client and click the Generate button.
-
-The certificate details (cert and key) will be available below in the SSL Certificates section upon the initial generation of the client certificate. Simply click the "Display key and certificate" link to expose the details. Copy and paste this cert/key data into respective files locally and distribute them as needed for use with a Kafka driver. The CA certificate unique to your deployment will be displayed in this section as well, and will also need to be saved locally.
-
-**Please note that these details cannot be retrieved again after leaving or reloading the page. If the certificates are lost, you must generate a replacement.**
-
-# Producing Data to Eventador
-
-**Note: Examples below require the [kafka-python](https://github.com/dpkp/kafka-python) driver.**
-
-## Producing over PLAINTEXT
-```python
-#!/usr/bin/env python
-import json
-from kafka import KafkaProducer
-
-EVENTADOR_KAFKA_TOPIC = "defaultsink"  # any topic name, will autocreate if needed
-EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments->connections in UI
-
-payload = {}
-
-# this is the data you want to send in
-payload['records'] = [
-  {"value": {"sensor": "MashTun1", "temp": 99}},
-  {"value": {"sensor": "MashTun2", "temp": 42}}
-]
-
-producer = KafkaProducer(value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-                         bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
-producer.send(EVENTADOR_KAFKA_TOPIC, payload)
+```
+docker run -d \
+-e EVENTADOR_KAFKA_TOPIC='defaultsink' \
+-e EVENTADOR_BOOTSTRAP_SERVERS='<paste kafka connection.plain text here>' \
+eventador/brewery_example_producer python /bin/producer.py
 ```
 
-## Producing over SSL
+After a few seconds temperatures will start being produced into the Data Pipeline.
 
-This will require generating a client certificate as noted above.
+## Step 4: Build some views
 
-```python
-#!/usr/bin/env python
-import json
-from kafka import KafkaProducer
+Create a continuous view in PipelineDB to perform aggregation functions over time.
 
-EVENTADOR_KAFKA_TOPIC = "defaultsink"  # any topic name, will autocreate if needed
-EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments->connections in UI
-EVENTADOR_SSL_CA_CERTIFICATE_FILE = "/path/to/deployment_ca.cer"
-EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE = "/path/to/deployment_client.cer"
-EVENTADOR_SSL_CLIENT_KEY_FILE = "/path/to/deployment_client.key"
-
-payload = {}
-
-# this is the data you want to send in
-payload['records'] = [
-  {"value": {"sensor": "MashTun1", "temp": 99}},
-  {"value": {"sensor": "MashTun2", "temp": 42}}
-]
-
-producer = KafkaProducer(value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-                         bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS,
-                         security_protocol='SSL',
-                         ssl_cafile=EVENTADOR_SSL_CA_CERTIFICATE_FILE,
-                         ssl_certfile=EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE,
-                         ssl_keyfile=EVENTADOR_SSL_CLIENT_KEY_FILE)
-producer.send(EVENTADOR_KAFKA_TOPIC, payload)
+```
+# create a continuous view as a real-time aggregation
+export DBHOST='<paste pipelinedb host here>'
+export DBPWD='<paste pipelinedb pwd here>'
+docker run -it \
+-e PGHOST=$DBHHOST \
+-e PGPORT='9000' \
+-e PGUSER='defaultsink' \
+-e PGPASSWORD=$DBPWD \
+eventador/pipelinedb_client \
+psql -f /opt/eventador/examples/brewery_example.sql
 ```
 
-# Consuming Data from Eventador
+## Step 5: Analyze the data
 
-## Consuming over PLAINTEXT
+ Use the Eventador Notebook server for some analysis. Log in, and open the example notebook.
 
-```python
-#!/usr/bin/env python
-from kafka import KafkaConsumer
+ - Click the [Deployment](http://console.eventador.io/deployments) tab.
+ - Select your Deployment
+ - Select the connections tab. Click on the notebook link, the notebook username/password is listed right below the link.
+- Once in the Eventador Notebook environment, Select File->Open and select the brewery_example.ipynb notebook, and follow the steps in the notebook.
 
-EVENTADOR_KAFKA_TOPIC = "defaultsink"  # any topic name, will autocreate if needed
-EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments->connections in UI
+# Monitoring a Deployment
 
-consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC, bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS)
+You can monitor your Deployment via the Eventador [Console](http://console.eventador.io/). This will display a dashboard of statistics from the Kafka nodes within your deployment.
 
-for msg in consumer:
-    print msg
-```
-
-## Consuming over SSL
-
-```python
-#!/usr/bin/env python
-from kafka import KafkaConsumer
-
-EVENTADOR_KAFKA_TOPIC = "defaultsink"  # any topic name, will autocreate if needed
-EVENTADOR_BOOTSTRAP_SERVERS = "my bootstrap servers"  # value from deployments->connections in UI
-EVENTADOR_SSL_CA_CERTIFICATE_FILE = "/path/to/deployment_ca.cer"
-EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE = "/path/to/deployment_client.cer"
-EVENTADOR_SSL_CLIENT_KEY_FILE = "/path/to/deployment_client.key"
-
-consumer = KafkaConsumer(EVENTADOR_KAFKA_TOPIC,
-                         bootstrap_servers=EVENTADOR_BOOTSTRAP_SERVERS,
-                         security_protocol='SSL',
-                         ssl_cafile=EVENTADOR_SSL_CA_CERTIFICATE_FILE,
-                         ssl_certfile=EVENTADOR_SSL_CLIENT_CERTIFICATE_FILE,
-                         ssl_keyfile=EVENTADOR_SSL_CLIENT_KEY_FILE)
-for msg in consumer:
-    print msg
-```
-
-# Extended Interfaces - Stacks
-
-Eventador provides the ability to have extended interfaces. These are additional components provisioned in your deployment that allow for additional functionality and usefulness when building real time data applications.
-
-## SQL Interface
-
-The SQL Interface is based on PipelineDB/PostgreSQL and allows you to build 'continuous views' to aggregate, time-slice, and perform stream processing in real time. The PostgreSQL API provides access to a massive eco-system of SQL compliant tools and drivers. You can build complex programs and algorithms or simply point a reporting tool at the SQL Interface.
-
-## Consuming from the Eventador SQL Interface
-
-The SQL Interface is based on PipelineDB/PostgreSQL. You can define a continuous view using simple SQL syntax and the views are continuously updated as data comes in from the stack. Views can be simple aggregations, time-windows, advanced analytics, or anything else as defined by the PipelineDB SQL syntax and functions.
-
-A continuous view is a view of a SQL Stream. The stream is automatically built when a stack is created. A sample continuous view is created named ```ev_sample_view```. You can create more continuous views as needed. The database enforces SSL and causes the client to use SSL by default.
-
-To login to the database and query the sample view and create more continuous views:
-
-- Download the PipelineDB client [here](https://www.pipelinedb.com/download).
-- Connect to the database using **psql** with your username, database. The login information, and hostname is available in the Eventador [Console](http://console.eventador.io/stacks), select the stack to view the stack details complete with connection information.
-
-```bash
-psql -U <username> -h <hostname> -p 9000 <database_name>
-```
-
-Query the sample view:
-
-```sql
--- just select some basic data
-SELECT * FROM ev_sample_view LIMIT 10;
-```
-
-Continuous views are created on a stream. Every default stack has a default stream named ```defaultsink_stream``` created automatically, with a payload field with the data type JSON.
-
-You can create a new continuous view:
-
-```sql
--- average temperature of sensors over the last 5 minutes by sensor name
-CREATE CONTINUOUS VIEW brewery_sensor_temps WITH (max_age = '5 minutes') AS
-SELECT payload->>'sensor', AVG((payload->>'temp'::text)::numeric)
-FROM defaultsink_stream
-GROUP BY payload->>'sensor';
-```
-
-or
-
-```sql
--- average temperature by hour of day
-CREATE CONTINUOUS VIEW brewery_temps_by_hourofday AS
-SELECT date_part('hour', arrival_timestamp) as ts,
-avg((payload->>'temp'::text)::numeric)
-FROM defaultsink_stream
-GROUP BY ts;
-```
-
-More information on continuous views is available in the [PipelineDB documentation](http://docs.pipelinedb.com/continuous-views.html)
-
-## Monitoring the deployment
-
-You can monitor your deployment via the Eventador [Console](http://console.eventador.io/). This will display a dashboard of statistics from the Kafka nodes within your deployment.
-
-## Software Versions
+# Software Versions
 - Kafka v0.10
 - PipelineDB 0.9.3/PostgreSQL 9.5
