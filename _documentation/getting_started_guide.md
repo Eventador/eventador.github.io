@@ -76,7 +76,7 @@ Create a continuous view in PipelineDB to perform aggregation functions over tim
 export DBHOST='<paste pipelinedb host here>'
 export DBPWD='<paste pipelinedb pwd here>'
 docker run -it \
--e PGHOST=$DBHHOST \
+-e PGHOST=$DBHOST \
 -e PGPORT='9000' \
 -e PGUSER='defaultsink' \
 -e PGPASSWORD=$DBPWD \
