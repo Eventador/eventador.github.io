@@ -100,5 +100,5 @@ The details of the notebook [here](https://github.com/Eventador/examples/blob/ma
 You can monitor your Deployment via the Eventador [Console](http://console.eventador.io/). This will display a dashboard of statistics from the Kafka nodes within your deployment.
 
 # Software Versions
-- Kafka v0.10
-- PipelineDB 0.9.3/PostgreSQL 9.5
+- Kafka v0.10.1
+- PipelineDB 0.9.5/PostgreSQL 9.5
