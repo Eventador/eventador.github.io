@@ -3,29 +3,25 @@ layout: default
 title: Getting Started Guide
 ---
 
-# Beta
-
-Eventador.io is currently in Beta. Please submit feedback to [hello@eventador.io](mailto:hello@eventador.io)
-
 # Overview
 
-Eventador is a high performance real-time data pipeline platform based on Apache Kafka. Eventador makes it easy perform analysis and build applications using real time streaming data. Some areas that can benefit from real time data are sensor networks, IoT, click-stream analysis, fraud detection, or anything that requires real-time data. Eventador is deployed to Amazon AWS, and delivered as a service.
+Eventador is a high performance real-time data pipeline platform based on Apache Kafka. Eventador makes it easy to perform analysis and build applications using real time streaming data. Some areas that can benefit from real time data are sensor networks, IoT, click-stream analysis, fraud detection, or anything that requires real-time data. Eventador is deployed to Amazon AWS, and delivered as a service.
 
 Getting started with Eventador takes just a few simple steps.
 
 # Concepts
 
-Eventador facilitates the creation of clusters of cloud servers called **Deployments**. Deployments are built on AWS in a VPC per customer.
+Eventador facilitates the creation of clusters of cloud servers referred to as **Kafka Deployments**. Kafka Deployments are built on AWS with a dedicated, isolated VPC per customer (for all non-sandbox plans).
 
-Each deployment may have many logical stream namespaces as Kafka **Topics**. Endpoints are exposed in plaintext or SSL for producing and consuming data for each topic.
+Each deployment may have many logical namespaces based on Kafka **Topics**. Endpoints are exposed in plaintext or SSL for producing and consuming data for each topic.
 
-**Stacks** are interfaces that make consuming or producing data from/to a topic easy. A stack operates on a Topic. Eventador currently is shipping with a default stack running PipelineDB. The PipelineDB stack automatically consumes from the 'defaultsink' topic into the database, allowing for continuous views to be created against the stream.
+**Stacks** are interfaces that make consuming or producing data from/to a topic easy and powerful. A stack operates on a Topic. Eventador provides a default stack running PipelineDB. The PipelineDB stack automatically consumes from the 'defaultsink' topic into the database, allowing users to execute complex SQL against the stream.
 
 Each Deployment has a Jupyter **Notebook** server attached to it with helper functions for all endpoints. This enables easy analysis, graphing, data manipulation and reporting.
 
-The Deployment, Topic, and Stacks make a **Data Pipeline**.
+The Kafka Deployment, Topic, and Stacks provide a **Data Pipeline**.
 
-# Complete Example
+# Quickstart Example
 
 For this example we will do some hypothetical brewery automation based on real time sensor data. Sensors on beer mash tuns gather the current temperature levels and produce it to the pipeline. The data is then aggregated in real-time in PipelineDB. This allows the brewer to monitor the temperature levels and ensure it's below a particular threshold for good beer. If it gets out of threshold an actuator can reduce or increase the temperature.
 
@@ -43,18 +39,18 @@ If you don't have one already, [create](http://console.eventador.io/register) an
 
 You must have at least one deployment.
 
-- Click the [Deployment](http://console.eventador.io/deployments) tab.
-- Select the 'Create Deployment' button.
+- Click the [Kafka Deployment](http://console.eventador.io/deployments) tab.
+- Select the 'Create Kafka Deployment' button.
 - Name the deployment, and select the compute resource style appropriate for the workload being run.
 - Click create. A deployment may take a bit of time to provision. A deployment can not be used until it's status is 'Active' in the [Deployments](http://console.eventador.io/deployments) tab.
-- An ACL must be created to allow the producers and consumers to connect. On the [Deployments](http://console.eventador.io/deployments) tab, select the deployment->Security->Add ACL. Add a value in CIDR notation for the IP to whitelist. You can use ```curl ifconfig.co``` to find your IP.
+- An ACL must be created to allow the producers and consumers to connect. On the [Kafka Deployments](http://console.eventador.io/deployments) tab, select the deployment->Security->Add ACL. Add a value in CIDR notation for the IP to whitelist. You can use ```curl ifconfig.co``` to find your IP.
 
 ## Step 3: Send some data
 
-Producing data to Eventador is done by sending some data to a Deployment for a particular Topic. In this case, sensors on mash tuns.
+Producing data to Eventador is done by sending some data to a Kafka Deployment for a particular Topic. In this case, sensors on mash tuns.
 
-- Click the [Deployment](http://console.eventador.io/deployments) tab.
-- Select your Deployment
+- Click the [Kafka Deployment](http://console.eventador.io/deployments) tab.
+- Select your Kafka Deployment
 - Select the connections tab.
 - Copy/Paste the Kafka Connections.Plain Text field into the example below, and run it on the command line. This will launch a Docker container in the background that's sending temperature data on periodic intervals.
 
@@ -97,8 +93,8 @@ The details of the notebook [here](https://github.com/Eventador/examples/blob/ma
 
 # Monitoring a Deployment
 
-You can monitor your Deployment via the Eventador [Console](http://console.eventador.io/). This will display a dashboard of statistics from the Kafka nodes within your deployment.
+You can monitor your Kafka Deployment via the Eventador [Console](http://console.eventador.io/). This will display a dashboard of statistics from the Kafka nodes within your deployment.
 
 # Software Versions
 - Kafka v0.10.1
-- PipelineDB 0.9.5/PostgreSQL 9.5
+- PipelineDB 0.9.6/PostgreSQL 9.5
