@@ -7,19 +7,25 @@ title: Getting Started Guide
 
 Eventador is a high performance real-time data pipeline platform based on Apache Kafka. Eventador makes it easy to perform analysis and build applications using real time streaming data. Some areas that can benefit from real time data are sensor networks, IoT, click-stream analysis, fraud detection, or anything that requires real-time data. Eventador is deployed to Amazon AWS, and delivered as a service.
 
-Getting started with Eventador takes just a few simple steps.
+Getting started with Eventador takes just a few simple steps. But first, some concepts.
 
 # Concepts
 
-Eventador facilitates the creation of clusters of cloud servers referred to as **Kafka Deployments**. Kafka Deployments are built on AWS with a dedicated, isolated VPC per customer (for all non-sandbox plans).
+Eventador.io is a real-time streaming data platform. We enable you to easily build data pipelines for any real-time data use case from applications to research.
 
-Each deployment may have many logical namespaces based on Kafka **Topics**. Endpoints are exposed in plaintext or SSL for producing and consuming data for each topic.
+The core component of Eventador.io is a deployment. A deployment is a logical grouping of components that make up your data pipeline. This includes an Apache Kafka cluster with consume and produce endpoints, A PrestoDB endpoint, Eventador Notebook endpoints and so on.
 
-**Stacks** are interfaces that make consuming or producing data from/to a topic easy and powerful. A stack operates on a Topic. Eventador provides a default stack running PipelineDB. The PipelineDB stack automatically consumes from the 'defaultsink' topic into the database, allowing users to execute complex SQL against the stream.
+Deployments contain topics. Multiple streams of data can exist within a single deployment. In general it's best to separate topics based on some construct of the use-case the data stream is being used for. Perhaps one for marketing data and one for product suggestions for instance.
 
-Each Deployment has a Jupyter **Notebook** server attached to it with helper functions for all endpoints. This enables easy analysis, graphing, data manipulation and reporting.
+A deployment consists of:
 
-The Kafka Deployment, Topic, and Stacks provide a **Data Pipeline**.
+- A Kafka cluster including Zookeeper nodes (the backbone of the service)
+- A PrestoDB cluster (for quick analysis and reporting)
+- A Eventador Notebook server (for analysis, experiments, and output)
+
+When you sign up you get a distinct and isolated VPC that your deployments live in. You **must** grant access to each deployment via the deployments->Security tab in order for any IP traffic to be allowed through. More on this below.
+
+Note: Sandbox plans are comprised of only a Kafka cluster.
 
 # Quickstart Example
 
@@ -29,11 +35,12 @@ The complete sample set can be found in our examples repo.
 
 ## Prequisites
 
-- Docker
+- [kafkacat](https://github.com/edenhill/kafkacat)
 
 ## Step 1: Create an Account
 
 If you don't have one already, [create](http://console.eventador.io/register) an account.
+If you don't already have a credit card on file, enter one in the [accounts](http://console.eventador.io/account) page.
 
 ## Step 2: Create a Deployment
 
@@ -41,55 +48,68 @@ You must have at least one deployment.
 
 - Click the [Kafka Deployment](http://console.eventador.io/deployments) tab.
 - Select the 'Create Kafka Deployment' button.
+- Select a plan that fits your workload. For most all workloads this is a developer plan or above.
 - Name the deployment, and select the compute resource style appropriate for the workload being run.
 - Click create. A deployment may take a bit of time to provision. A deployment can not be used until it's status is 'Active' in the [Deployments](http://console.eventador.io/deployments) tab.
 - An ACL must be created to allow the producers and consumers to connect. On the [Kafka Deployments](http://console.eventador.io/deployments) tab, select the deployment->Security->Add ACL. Add a value in CIDR notation for the IP to whitelist. You can use ```curl ifconfig.co``` to find your IP.
 
-## Step 3: Send some data
+## Step 3: Create a Topic
 
-Producing data to Eventador is done by sending some data to a Kafka Deployment for a particular Topic. In this case, sensors on mash tuns.
+A topic is a container for a stream of data pertaining to some use case.
 
 - Click the [Kafka Deployment](http://console.eventador.io/deployments) tab.
-- Select your Kafka Deployment
+- Select the Topics tab.
+- Select the 'Add Topic' button
+- Name the topic 'brewery'
+- 32 partitions, replication factor 3
+- Click create
+
+## Step 4: Send some data
+
+Producing data to Eventador is done by sending some data to a Kafka Deployment for a particular Topic. In this case, hypothetical data on sensors for mash tuns. We are going to use the kafkacat utility to send data from the command line, but it could be any client using any Kafka driver.
+
+- Click the [Kafka Deployment](http://console.eventador.io/deployments) tab.
+- Select your Kafka Deployment.
 - Select the connections tab.
-- Copy/Paste the Kafka Connections.Plain Text field into the example below, and run it on the command line. This will launch a Docker container in the background that's sending temperature data on periodic intervals.
+- Copy/Paste the Kafka Connections.Plain Text field into the example below.
 
 ```
-docker run -d \
--e EVENTADOR_KAFKA_TOPIC='defaultsink' \
--e EVENTADOR_BOOTSTRAP_SERVERS='<paste kafka connection.plain text here>' \
-eventador/brewery_example_producer python /bin/producer.py
+BROKERS=<the value pasted from console>
+echo '{"name": "mashtun01", "temp": "38"}' | kafkacat -P -b $BROKERS -t brewery
+echo '{"name": "mashtun02", "temp": "37"}' | kafkacat -P -b $BROKERS -t brewery
+echo '{"name": "mashtun01", "temp": "37"}' | kafkacat -P -b $BROKERS -t brewery
+echo '{"name": "mashtun03", "temp": "44"}' | kafkacat -P -b $BROKERS -t brewery
 ```
 
-After a few seconds temperatures will start being produced into the Data Pipeline.
+## Step 5: Consume some data
 
-## Step 4: Build some views
+Eventador.io has a number of endpoints where data can be consumed depending on your use case.
 
-Create a continuous view in PipelineDB to perform aggregation functions over time.
+- Raw Kafka message
+- PrestoDB SQL
+- Eventador Notebook (via SQL or via Python or R or Julia)
 
+In this case let's assume you want to consume the messages to create a report in PrestoDB SQL, perhaps for a report to the brewer. In this case we are pushing a JSON object into the data pipeline, so we will use JSON operators in PrestoDB to access those fields.
+
+- Click on the [deployment]((http://console.eventador.io/deployments) tab.
+- Choose the deployment you created in step 2.
+- Select the SQL tab
+- Run the following SQL in the SQL pane:
+
+```SQL
+SELECT
+json_extract(_message, '$.name') as sensor_name,
+round(avg(try_cast(json_extract(_message, '$.temp') as integer))) as avg_temp
+FROM brewery
+GROUP BY 1
+ORDER BY 2;
+
+sensor_name | avg_temp
+----------------------
+"mashtun02" | 37
+"mashtun01" | 38
+"mashtun03" | 44
 ```
-# create a continuous view as a real-time aggregation
-export DBHOST='<paste pipelinedb host here>'
-export DBPWD='<paste pipelinedb pwd here>'
-docker run -it \
--e PGHOST=$DBHOST \
--e PGPORT='9000' \
--e PGUSER='defaultsink' \
--e PGPASSWORD=$DBPWD \
-eventador/pipelinedb_client \
-psql -f /opt/eventador/examples/brewery_example.sql
-```
-
-## Step 5: Analyze the data
-
- Use the Eventador Notebook server for some analysis. Log in, and open the example notebook.
-
- - Click the [Deployment](http://console.eventador.io/deployments) tab.
- - Select your Deployment
- - Select the connections tab. Click on the notebook link, the notebook username/password is listed right below the link.
-- Once in the Eventador Notebook environment, Select File->Open and select the brewery_example.ipynb notebook, and follow the steps in the notebook.
-
-The details of the notebook [here](https://github.com/Eventador/examples/blob/master/notebooks/Brewery%2BExample.ipynb) are on Github.
 
 # Monitoring a Deployment
 
@@ -97,4 +117,4 @@ You can monitor your Kafka Deployment via the Eventador [Console](http://console
 
 # Software Versions
 - Kafka v0.10.1
-- PipelineDB 0.9.6/PostgreSQL 9.5
+- PrestoDB 1.66
