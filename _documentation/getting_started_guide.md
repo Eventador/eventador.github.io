@@ -97,7 +97,7 @@ kafkacat -C -b $BROKERS -t brewery
 
 In this case let's assume you want to consume the messages to create a report in PrestoDB SQL, perhaps for a report to the brewer. In this case we are pushing a JSON object into the data pipeline, so we will use JSON operators in PrestoDB to access those fields.
 
-- Click on the [deployment]((http://console.eventador.io/deployments) tab.
+- Click on the [deployment](http://console.eventador.io/deployments) tab.
 - Choose the deployment you created in step 2.
 - Select the SQL tab
 - Run the following SQL in the SQL pane:
