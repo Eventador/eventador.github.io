@@ -20,12 +20,10 @@ Deployments contain topics. Multiple streams of data can exist within a single d
 A deployment consists of:
 
 - A Kafka cluster including Zookeeper nodes (the backbone of the service)
-- A PrestoDB cluster (for quick analysis and reporting)
-- A Eventador Notebook server (for analysis, experiments, and output)
+- A PrestoDB cluster (for quick analysis and reporting) (developer plan or above)
+- A Eventador Notebook server (for analysis, experiments, and output) (developer plan or above)
 
 When you sign up you get a distinct and isolated VPC that your deployments live in. You **must** grant access to each deployment via the deployments->Security tab in order for any IP traffic to be allowed through. More on this below.
-
-Note: Sandbox plans are comprised of only a Kafka cluster.
 
 # Quickstart Example
 
@@ -86,8 +84,16 @@ echo '{"name": "mashtun03", "temp": "44"}' | kafkacat -P -b $BROKERS -t brewery
 Eventador.io has a number of endpoints where data can be consumed depending on your use case.
 
 - Raw Kafka message
-- PrestoDB SQL
-- Eventador Notebook (via SQL or via Python or R or Julia)
+- PrestoDB SQL (developer plan and above)
+- Eventador Notebook (via SQL or via Python or R or Julia) (developer plan and above)
+
+### Consuming data via Kafka
+
+```
+BROKERS=<the value pasted from console>
+kafkacat -C -b $BROKERS -t brewery
+```
+### Consuming data via PrestoDB SQL (Developer Plan and above)
 
 In this case let's assume you want to consume the messages to create a report in PrestoDB SQL, perhaps for a report to the brewer. In this case we are pushing a JSON object into the data pipeline, so we will use JSON operators in PrestoDB to access those fields.
 
