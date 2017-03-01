@@ -29,7 +29,7 @@ Note: Sandbox plans are comprised of only a Kafka cluster.
 
 # Quickstart Example
 
-For this example we will do some hypothetical brewery automation based on real time sensor data. Sensors on beer mash tuns gather the current temperature levels and produce it to the pipeline. The data is then aggregated in real-time in PipelineDB. This allows the brewer to monitor the temperature levels and ensure it's below a particular threshold for good beer. If it gets out of threshold an actuator can reduce or increase the temperature.
+For this example we will do some hypothetical brewery automation based on real time sensor data. Sensors on beer mash tuns gather the current temperature levels and produce it to the pipeline. The data can then be queried right from the Kafka via SQL. This allows the brewer to monitor the temperature levels and ensure it's below a particular threshold for good beer. If it gets out of threshold an actuator can reduce or increase the temperature.
 
 The complete sample set can be found in our examples repo.
 
