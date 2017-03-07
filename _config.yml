@@ -25,3 +25,5 @@ collections:
     output: true
 
 exclude: [vendor]
+
+theme: jekyll-theme-minimal
