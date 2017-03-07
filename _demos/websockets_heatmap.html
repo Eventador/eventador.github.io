@@ -1,6 +1,7 @@
 <!--
 
 Example Eventador Websockets implementation
+Using D4D:assemble deployment
 
 Uses https://github.com/socketio for WS comms
 
@@ -103,9 +104,8 @@ var map = new mapboxgl.Map({
 var dummy = {"type": "FeatureCollection", "features": [] };
 var tweets_list = [];
 
-// set up some websockets handlers
-// var data_endpoint = 'http://localhost:5000/geojson_test'
-var data_endpoint = 'http://app.ad56949c.pub.va.eventador.io:5000/geojson_test'
+// set up some websockets handlers, this one is for D4D:assemble
+var data_endpoint = 'ws://app.ad56949c.pub.va.eventador.io:5000/geojson_test'
 var socket = io.connect(data_endpoint);
 socket.on('connect', function(){
     document.getElementById('status').innerHTML = "Connected to Eventador";
