@@ -1,0 +1,194 @@
+<!--
+
+Example Eventador Websockets implementation
+
+Uses https://github.com/socketio for WS comms
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Eventador Demo</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <!-- load mapbox resources -->
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.css' rel='stylesheet' />
+    <!-- load resource for websockets comms -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn-orig.socket.io/socket.io-1.7.2.js"></script>
+    <!-- simple styles in-line for easy readability -->
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        span {
+            padding-top: 10px;
+            padding-left: 25px;
+            color: #484D46;
+            text-align: left;
+            font-family: monospace;
+            position:relative;   /* IE6/7/8 */
+        }
+        .tweets-box {
+            height: 20%;
+            width: 100%;
+            position: absolute;
+            bottom: 0px;
+            background: rgb(255, 255, 255);
+            background-color: rgba(255, 255, 255, .5);
+            z-index: 2;
+            border-width: 1px;
+            border-style: solid;
+        }
+        .status-box {
+            height: 10px;
+            position: absolute;
+            top: 0px;
+            width: 20%;
+            z-index: 2;
+            padding: 5px;
+            color: gray;
+            font-size: 1em;
+            font-family: monospace;
+        }
+        .logo-box {
+            height: 10px;
+            position: absolute;
+            top: 0px;
+            width: 150px;
+            right: 0px;
+            padding: 15px;
+            color: white;
+        }
+        .title-box {
+            height: 20px;
+            position: absolute;
+            top: 0px;
+            width: 100%;
+            right: 0px;
+            padding: 15px;
+            color: white;
+            z-index: 4;
+            text-align: center;
+            font-size: 2em;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+<!-- basic DIV based page -->
+<div id="map"></div>
+<div class="title-box">Last 15 minutes of tweet traffic for #ice-raids</div>
+<div id="status" class="status-box">Not Connected</div>
+<div id="status" class="logo-box">
+    <a href="https://www.eventador.io">
+        <img width=150 src="http://www.eventador.io/img/eventador_logo_small_wt.png">
+    </a>
+</div>
+<div class="tweets-box">
+    <span id="tweets">Waiting for tweets..</span>
+</div>
+
+<script>
+// initialize a map using mapbox GL
+mapboxgl.accessToken = 'pk.eyJ1Ijoia2Vubnlnb3JtYW4iLCJhIjoiY2lrOXhjaDRwMGZrN3ZvbTQ4YWhqaGx3NSJ9._aq1BwXXk838aloAemHDig';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v9',
+    center: [-97.314015, 40.548090],
+    zoom: 3
+});
+// stubs until we start getting data
+var dummy = {"type": "FeatureCollection", "features": [] };
+var tweets_list = [];
+
+// set up some websockets handlers
+// var data_endpoint = 'http://localhost:5000/geojson_test'
+var data_endpoint = 'http://app.ad56949c.pub.va.eventador.io:5000/geojson_test'
+var socket = io.connect(data_endpoint);
+socket.on('connect', function(){
+    document.getElementById('status').innerHTML = "Connected to Eventador";
+});
+socket.on('disconnect', function(){
+    document.getElementById('status').innerHTML = "Disconnected";
+});
+socket.on('connect-timeout', function(data){
+    document.getElementById('status').innerHTML = "Disconnected";
+});
+
+// when the map loads, initialize layers, and start listening for events
+map.on('load', function() {
+
+    map.addSource("ice_raids", {
+        type: "geojson",
+        data: dummy,
+        cluster: true,
+        clusterMaxZoom: 15, // Max zoom to cluster points on
+        clusterRadius: 20 // Use small cluster radius for the heatmap look
+    });
+
+    // Each point range gets a different fill color.
+    var layers = [
+        [0, '#7F9A65'],
+        [3, '#608341'],
+        [7, '#9CBA7F']
+    ];
+
+    layers.forEach(function (layer, i) {
+        map.addLayer({
+            "id": "cluster-" + i,
+            "type": "circle",
+            "source": "ice_raids",
+            "paint": {
+                "circle-color": layer[1],
+                "circle-radius": 70,
+                "circle-blur": 1 // blur the circles to get a heatmap look
+            },
+            "filter": i === layers.length - 1 ?
+                [">=", "point_count", layer[0]] :
+                ["all",
+                    [">=", "point_count", layer[0]],
+                    ["<", "point_count", layers[i + 1][0]]]
+        }, 'waterway-label');
+    });
+
+    map.addLayer({
+        "id": "unclustered-points",
+        "type": "circle",
+        "source": "ice_raids",
+        "paint": {
+            "circle-color": '#7F9A65',
+            "circle-radius": 20,
+            "circle-blur": 1
+        },
+        "filter": ["!=", "cluster", true]
+    }, 'waterway-label');
+
+    socket.on('my_response', function(msg) {
+        // when we get a message on the socket, parse it
+        data = JSON.parse(msg.data);
+
+        // gather tweets, keep a list of the last N
+        var tweet_count_to_keep = 10;
+        var tweet = JSON.parse(data['raw_tweet']);
+        tweets_list.push(tweet['created_at']+":"+data['twitter_username']+' '+tweet['text']+"<br>");
+        if (tweets_list.length > tweet_count_to_keep){
+            tweets_list.splice(0,1);
+        }
+        document.getElementById('tweets').innerHTML = tweets_list.join(' ');
+
+        // pull out geojson for plotting
+        geojson = JSON.parse(data['geo_data']['geojson']);
+        if ('features' in geojson) {
+            dummy.features.push(geojson['features'][0]);
+            if (dummy.features.length > 500){
+                dummy.features.splice(0,1);
+            }
+            map.getSource("ice_raids").setData(dummy);
+        }
+    });
+});
+</script>
+</body>
+</html>
