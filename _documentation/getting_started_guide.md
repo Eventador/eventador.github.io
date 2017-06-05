@@ -20,16 +20,16 @@ Deployments contain topics. Multiple streams of data can exist within a single d
 A deployment consists of:
 
 - A Kafka cluster including Zookeeper nodes (the backbone of the service)
-- A PrestoDB cluster (for quick analysis and reporting) (developer plan or above)
-- A Eventador Notebook server (for analysis, experiments, and output) (developer plan or above)
+- A PrestoDB cluster (for quick analysis and reporting) (Enterprise Plans)
+- A Eventador Notebook server (for analysis, experiments, and output) (Enterprise Plans)
 
-When you sign up you get a distinct and isolated VPC that your deployments live in. You **must** grant access to each deployment via the deployments->Security tab in order for any IP traffic to be allowed through. More on this below.
+When you sign up you get a distinct and isolated VPC that your deployments live in. in order for any IP traffic to be allowed through, you **must** grant access to each deployment via the deployments tab by clicking the lockbox under the green 'create deployment' button . More on this [below](#step-2-create-a-deployment).
 
 # Quickstart Example
 
 For this example we will do some hypothetical brewery automation based on real time sensor data. Sensors on beer mash tuns gather the current temperature levels and produce it to the pipeline. The data can then be queried right from the Kafka via SQL. This allows the brewer to monitor the temperature levels and ensure it's below a particular threshold for good beer. If it gets out of threshold an actuator can reduce or increase the temperature.
 
-The complete sample set can be found in our examples repo.
+The complete sample set can be found in our [examples repo](https://github.com/Eventador/examples).
 
 ## Prequisites
 
@@ -37,26 +37,26 @@ The complete sample set can be found in our examples repo.
 
 ## Step 1: Create an Account
 
-If you don't have one already, [create](http://console.eventador.io/register) an account.
-If you don't already have a credit card on file, enter one in the [accounts](http://console.eventador.io/account) page.
+If you don't have one already, [create](https://console.eventador.io/register) an account.
+If you don't already have a credit card on file, enter one in the [accounts](https://console.eventador.io/account) page.
 
 ## Step 2: Create a Deployment
 
 You must have at least one deployment.
 
-- Click the [Kafka Deployment](http://console.eventador.io/deployments) tab.
-- Select the 'Create Kafka Deployment' button.
+- Click the [Deployment](https://console.eventador.io/deployments) tab.
+- Click the 'Create Deployment' button.
 - Select a plan that fits your workload. For most all workloads this is a developer plan or above.
 - Name the deployment, and select the compute resource style appropriate for the workload being run.
-- Click create. A deployment may take a bit of time to provision. A deployment can not be used until it's status is 'Active' in the [Deployments](http://console.eventador.io/deployments) tab.
-- An ACL must be created to allow the producers and consumers to connect. On the [Kafka Deployments](http://console.eventador.io/deployments) tab, select the deployment->Security->Add ACL. Add a value in CIDR notation for the IP to whitelist. You can use ```curl ifconfig.co``` to find your IP.
+- Click create. A deployment may take a bit of time to provision. A deployment can not be used until it's status is 'Active' in the [Deployments](https://console.eventador.io/deployments) tab.
+- An ACL must be created to allow the producers and consumers to connect. On the [ Deployments](https://console.eventador.io/deployments) tab, select the new deployment->click the lockbox on the right side of the screen>Add ACL. Add a value in CIDR notation for the IP to whitelist. You can use ```curl ifconfig.co``` to find your IP.
 
 ## Step 3: Create a Topic
 
 A topic is a container for a stream of data pertaining to some use case.
 
-- Click the [Kafka Deployment](http://console.eventador.io/deployments) tab.
-- Select the Topics tab.
+- Click the [Deployment](https://console.eventador.io/deployments) tab.
+- Click 'Apache Kafka'
 - Select the 'Add Topic' button
 - Name the topic 'brewery'
 - 32 partitions, replication factor 3
@@ -66,10 +66,10 @@ A topic is a container for a stream of data pertaining to some use case.
 
 Producing data to Eventador is done by sending some data to a Kafka Deployment for a particular Topic. In this case, hypothetical data on sensors for mash tuns. We are going to use the kafkacat utility to send data from the command line, but it could be any client using any Kafka driver.
 
-- Click the [Kafka Deployment](http://console.eventador.io/deployments) tab.
-- Select your Kafka Deployment.
+- Click the [Deployment](https://console.eventador.io/deployments) tab.
+- Click 'Apache Kafka' to view your newly created topic
 - Select the connections tab.
-- Copy/Paste the Kafka Connections.Plain Text field into the example below.
+- Copy/Paste the Plaint Text Endpoint field into the example below.
 
 ```
 BROKERS=<the value pasted from console>
@@ -84,8 +84,8 @@ echo '{"name": "mashtun03", "temp": "44"}' | kafkacat -P -b $BROKERS -t brewery
 Eventador.io has a number of endpoints where data can be consumed depending on your use case.
 
 - Raw Kafka message
-- PrestoDB SQL (developer plan and above)
-- Eventador Notebook (via SQL or via Python or R or Julia) (developer plan and above)
+- PrestoDB SQL (Enterprise plan and above)
+- Eventador Notebook (via SQL or via Python or R or Julia) (Enterprise plan and above)
 
 ### Consuming data via Kafka
 
@@ -93,13 +93,13 @@ Eventador.io has a number of endpoints where data can be consumed depending on y
 BROKERS=<the value pasted from console>
 kafkacat -C -b $BROKERS -t brewery
 ```
-### Consuming data via PrestoDB SQL (Developer Plan and above)
+### Consuming data via PrestoDB SQL (Enterprise plan and above)
 
 In this case let's assume you want to consume the messages to create a report in PrestoDB SQL, perhaps for a report to the brewer. In this case we are pushing a JSON object into the data pipeline, so we will use JSON operators in PrestoDB to access those fields.
 
-- Click on the [deployment](http://console.eventador.io/deployments) tab.
+- Click on the [deployment](https://console.eventador.io/deployments) tab.
 - Choose the deployment you created in step 2.
-- Select the SQL tab
+- Select PrestoDB
 - Run the following SQL in the SQL pane:
 
 ```SQL
@@ -117,9 +117,12 @@ sensor_name | avg_temp
 "mashtun03" | 44
 ```
 
+
 # Monitoring a Deployment
 
-You can monitor your Kafka Deployment via the Eventador [Console](http://console.eventador.io/). This will display a dashboard of statistics from the Kafka nodes within your deployment.
+You can monitor your Kafka Deployment via the Eventador [Dashboard](https://console.eventador.io/dashboard). This will display a dashboard of statistics from the Kafka nodes within your deployment.
+
+Checkout more examples in our [examples repo](https://github.com/Eventador/examples)
 
 # Software Versions
 - Kafka v0.10.1
